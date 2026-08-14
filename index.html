@@ -1,0 +1,1290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kate Interactive Workbook Essay</title>
+
+<style>
+:root{
+  --accent:#2563eb;
+  --bg:#eef5ff;
+  --card:#ffffff;
+  --text:#172033;
+  --muted:#64748b;
+  --border:#cbd8ee;
+  --red:#dc2626;
+  --blue:#2563eb;
+  --teal:#0f766e;
+  --orange:#ea580c;
+}
+
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  background:
+    radial-gradient(circle at 10% 5%, rgba(37,99,235,.14), transparent 28%),
+    radial-gradient(circle at 90% 12%, rgba(15,118,110,.12), transparent 25%),
+    linear-gradient(135deg,#eef5ff 0%,#f8fbff 55%,#eefcf9 100%);
+  font-family:Arial,sans-serif;
+  color:var(--text);
+}
+
+main{
+  max-width:850px;
+  margin:auto;
+  padding:22px 14px 40px;
+}
+
+.top{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  align-items:center;
+  flex-wrap:wrap;
+  padding:18px 20px;
+  border-radius:18px;
+  background:linear-gradient(135deg,#123a72,#2563eb 55%,#0f766e);
+  color:white;
+  box-shadow:0 8px 24px rgba(37,99,235,.18);
+}
+
+.top h1{
+  font-size:28px;
+  margin:0 0 5px;
+}
+
+.sub{
+  color:#dbeafe;
+  margin:0;
+}
+
+.badge{
+  background:#ffffff;
+  color:#1d4ed8;
+  padding:7px 11px;
+  border-radius:999px;
+  font-weight:bold;
+}
+
+.card{
+  background:rgba(255,255,255,.96);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:18px;
+  margin-top:14px;
+  box-shadow:0 4px 14px rgba(30,64,175,.07);
+}
+
+.tabs{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+}
+
+.tabs button{
+  padding:12px;
+  border:2px solid var(--border);
+  background:white;
+  border-radius:11px;
+  cursor:pointer;
+  font-weight:bold;
+  color:#334155;
+}
+
+.tabs button:nth-child(1).active{
+  background:#dbeafe;
+  border-color:#2563eb;
+  color:#1d4ed8;
+}
+
+.tabs button:nth-child(2).active{
+  background:#ccfbf1;
+  border-color:#0f766e;
+  color:#0f766e;
+}
+
+.tabs button:nth-child(3).active{
+  background:#ffedd5;
+  border-color:#ea580c;
+  color:#c2410c;
+}
+
+label{
+  display:block;
+  font-weight:bold;
+  margin-bottom:7px;
+}
+
+select,
+textarea{
+  width:100%;
+  border:2px solid var(--border);
+  border-radius:11px;
+  padding:12px;
+  font-size:16px;
+  background:white;
+}
+
+select:focus,
+textarea:focus{
+  outline:3px solid rgba(37,99,235,.15);
+  border-color:#2563eb;
+}
+
+textarea{
+  min-height:125px;
+  resize:vertical;
+}
+
+.prompt{
+  background:linear-gradient(90deg,#e0f2fe,#eff6ff);
+  border-left:5px solid #2563eb;
+  padding:14px;
+  border-radius:9px;
+  margin:15px 0;
+}
+
+.vocab{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+  margin:9px 0 16px;
+}
+
+.vocab button{
+  border:1px solid #93c5fd;
+  background:#eff6ff;
+  color:#1e40af;
+  border-radius:999px;
+  padding:7px 10px;
+  cursor:pointer;
+  font-weight:600;
+}
+
+.vocab button:hover{
+  background:#dbeafe;
+}
+
+.actions{
+  display:flex;
+  gap:9px;
+  flex-wrap:wrap;
+  margin-top:12px;
+}
+
+.actions button{
+  padding:10px 15px;
+  border-radius:10px;
+  border:2px solid var(--border);
+  background:white;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+.actions .primary{
+  background:linear-gradient(135deg,#2563eb,#0f766e);
+  color:white;
+  border-color:#2563eb;
+}
+
+button:disabled{
+  opacity:.5;
+  cursor:not-allowed;
+}
+
+.feedback{
+  margin-top:15px;
+}
+
+.sentence{
+  font-size:20px;
+  line-height:1.7;
+  padding:13px;
+  border:1px solid var(--border);
+  border-radius:11px;
+  background:#fff;
+}
+
+.red{
+  color:var(--red);
+  text-decoration:underline wavy var(--red);
+}
+
+.blue{
+  color:var(--blue);
+  text-decoration:underline var(--blue);
+}
+
+.note{
+  font-size:14px;
+  color:var(--muted);
+  margin-top:8px;
+}
+
+.item{
+  padding:11px;
+  border-left:4px solid #2563eb;
+  margin:8px 0;
+  background:#f8fafc;
+  border-radius:5px;
+}
+
+.good{
+  padding:13px;
+  background:#ecfdf5;
+  border-left:4px solid #0f766e;
+  border-radius:10px;
+}
+
+.stats{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:8px;
+  margin-top:14px;
+}
+
+.stat{
+  background:white;
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:12px;
+}
+
+.num{
+  font-size:24px;
+  font-weight:bold;
+  color:#1d4ed8;
+}
+
+.small{
+  font-size:13px;
+  color:var(--muted);
+}
+
+@media(max-width:600px){
+  .stats{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .tabs{
+    grid-template-columns:1fr;
+  }
+
+  .top h1{
+    font-size:23px;
+  }
+
+  .card > div[style*="grid-template-columns:2fr 1fr 1fr"]{
+    grid-template-columns:1fr !important;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<main>
+
+  <div class="top">
+
+    <div>
+      <h1>Kate Interactive Workbook Essay</h1>
+      <p class="sub">B1 Topic Sentence Workbook</p>
+    </div>
+
+    <div class="badge" id="progress">
+      Practice 1 / 15
+    </div>
+
+  </div>
+
+
+  <!-- STUDENT INFORMATION -->
+
+  <div class="card"
+       style="background:linear-gradient(135deg,#eff6ff,#ecfeff);border-color:#93c5fd;">
+
+    <div style="display:grid;
+                grid-template-columns:2fr 1fr 1fr;
+                gap:10px;
+                align-items:center;">
+
+      <div>
+        <div class="small">Student Name</div>
+        <strong>นายรัฐธีร์ รพีไชยรุจน์</strong>
+      </div>
+
+      <div>
+        <div class="small">Student ID</div>
+        <strong>39532</strong>
+      </div>
+
+      <div>
+        <div class="small">Number</div>
+        <strong>24</strong>
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- ESSAY TOPICS -->
+
+  <div class="card">
+
+    <div class="tabs">
+
+      <button class="topic active"
+              data-topic="health">
+        1. Health
+      </button>
+
+      <button class="topic"
+              data-topic="nature">
+        2. Nature
+      </button>
+
+      <button class="topic"
+              data-topic="technology">
+        3. Science &amp; Technology
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- WRITING ACTIVITY -->
+
+  <div class="card">
+
+    <label for="strategy">
+      Choose your opening strategy
+    </label>
+
+    <select id="strategy">
+
+      <option value="quote">
+        Quote
+      </option>
+
+      <option value="question">
+        Question
+      </option>
+
+      <option value="statement">
+        Declarative statement
+      </option>
+
+      <option value="hook">
+        Hook
+      </option>
+
+      <option value="story">
+        Short story / anecdote
+      </option>
+
+    </select>
+
+
+    <div class="prompt">
+
+      <strong>Your task:</strong>
+
+      <div id="prompt"></div>
+
+    </div>
+
+
+    <label>
+      Vocabulary you can use
+    </label>
+
+    <div class="vocab"
+         id="vocab">
+    </div>
+
+
+    <label for="answer">
+      Write ONE topic sentence
+    </label>
+
+    <textarea
+      id="answer"
+      placeholder="Write your topic sentence here..."
+    ></textarea>
+
+    <div class="note">
+      Aim for one clear sentence.
+      Your topic sentence should introduce the main idea of the paragraph.
+    </div>
+
+
+    <div class="actions">
+
+      <button
+        class="primary"
+        id="check">
+        Check My Sentence
+      </button>
+
+      <button
+        id="next"
+        disabled>
+        Next Practice
+      </button>
+
+      <button
+        id="clear">
+        Clear
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- FEEDBACK -->
+
+  <div
+    class="card feedback"
+    id="feedback"
+    hidden>
+
+    <h2>
+      Auto Feedback
+    </h2>
+
+    <div
+      class="sentence"
+      id="marked">
+    </div>
+
+    <div class="note">
+
+      <span class="red">
+        Red
+      </span>
+
+      =
+      spelling, punctuation, grammar, or sentence structure
+
+      &nbsp; | &nbsp;
+
+      <span class="blue">
+        Blue
+      </span>
+
+      =
+      weak choice of words
+
+    </div>
+
+    <div id="messages"></div>
+
+  </div>
+
+
+  <!-- PROGRESS -->
+
+  <div class="stats">
+
+    <div class="stat">
+
+      <div class="small">
+        Completed
+      </div>
+
+      <div
+        class="num"
+        id="completed">
+        0
+      </div>
+
+    </div>
+
+
+    <div class="stat">
+
+      <div class="small">
+        Strong
+      </div>
+
+      <div
+        class="num"
+        id="strong">
+        0
+      </div>
+
+    </div>
+
+
+    <div class="stat">
+
+      <div class="small">
+        Needs work
+      </div>
+
+      <div
+        class="num"
+        id="needs">
+        0
+      </div>
+
+    </div>
+
+
+    <div class="stat">
+
+      <div class="small">
+        Best score
+      </div>
+
+      <div
+        class="num"
+        id="best">
+        —
+      </div>
+
+    </div>
+
+  </div>
+
+</main>
+
+
+<script>
+
+const sets = {
+
+  health: {
+
+    prompts: [
+
+      "Write a topic sentence about why healthy habits are important for students.",
+
+      "Write a topic sentence explaining how exercise can improve a person's life.",
+
+      "Write a topic sentence about the importance of getting enough sleep.",
+
+      "Write a topic sentence about how food choices affect our health.",
+
+      "Write a topic sentence about why mental and physical health are connected."
+
+    ],
+
+    words: [
+
+      "healthy habits",
+      "physical health",
+      "mental health",
+      "regular exercise",
+      "balanced diet",
+      "sleep",
+      "well-being",
+      "prevent illness",
+      "daily routine",
+      "healthy choices"
+
+    ]
+
+  },
+
+
+  nature: {
+
+    prompts: [
+
+      "Write a topic sentence about why protecting nature is important.",
+
+      "Write a topic sentence explaining why forests are valuable.",
+
+      "Write a topic sentence about how pollution affects the natural world.",
+
+      "Write a topic sentence about why people should spend time in nature.",
+
+      "Write a topic sentence about how humans can protect wildlife."
+
+    ],
+
+    words: [
+
+      "protect nature",
+      "natural environment",
+      "wildlife",
+      "forests",
+      "pollution",
+      "biodiversity",
+      "natural resources",
+      "climate",
+      "ecosystem",
+      "future generations"
+
+    ]
+
+  },
+
+
+  technology: {
+
+    prompts: [
+
+      "Write a topic sentence about how technology has changed education.",
+
+      "Write a topic sentence explaining why science is important in modern life.",
+
+      "Write a topic sentence about the benefits of using technology responsibly.",
+
+      "Write a topic sentence about how smartphones affect students.",
+
+      "Write a topic sentence about how scientific discoveries can improve society."
+
+    ],
+
+    words: [
+
+      "technology",
+      "scientific discoveries",
+      "digital tools",
+      "education",
+      "innovation",
+      "research",
+      "communication",
+      "responsibly",
+      "modern society",
+      "solve problems"
+
+    ]
+
+  }
+
+};
+
+
+let topic = "health";
+
+let n = 0;
+
+let stats = {
+  completed: 0,
+  strong: 0,
+  needs: 0,
+  best: 0
+};
+
+
+const $ = id => document.getElementById(id);
+
+
+function render(){
+
+  const d = sets[topic];
+
+  $("progress").textContent =
+    `Practice ${n + 1} / 15`;
+
+  $("prompt").textContent =
+    d.prompts[n % 5];
+
+  $("vocab").innerHTML =
+    d.words
+      .map(word => `<button type="button">${word}</button>`)
+      .join("");
+
+  $("answer").value = "";
+
+  $("feedback").hidden = true;
+
+  $("next").disabled = true;
+
+
+  document
+    .querySelectorAll(".topic")
+    .forEach(button => {
+
+      button.classList.toggle(
+        "active",
+        button.dataset.topic === topic
+      );
+
+    });
+
+
+  document
+    .querySelectorAll(".vocab button")
+    .forEach(button => {
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          const answer = $("answer");
+
+          answer.value +=
+            (
+              answer.value &&
+              !/\s$/.test(answer.value)
+                ? " "
+                : ""
+            ) +
+            button.textContent;
+
+          answer.focus();
+
+        }
+      );
+
+    });
+
+}
+
+
+function esc(s){
+
+  return s.replace(
+    /[&<>"]/g,
+    c => ({
+      "&":"&amp;",
+      "<":"&lt;",
+      ">":"&gt;",
+      '"':"&quot;"
+    }[c])
+  );
+
+}
+
+
+function analyze(t){
+
+  const issues = [];
+
+  const x = t.trim();
+
+  const words =
+    x ? x.split(/\s+/) : [];
+
+
+  if(!x){
+
+    return {
+
+      score:0,
+
+      issues:[
+        {
+          kind:"grammar",
+          msg:"Write a sentence before checking it."
+        }
+      ]
+
+    };
+
+  }
+
+
+  if(words.length < 8){
+
+    issues.push({
+
+      kind:"grammar",
+
+      msg:
+        "Your sentence is very short. Add a clear topic and main idea; about 8–20 words is a useful B1 target."
+
+    });
+
+  }
+
+
+  if(!/[.!?]$/.test(x)){
+
+    issues.push({
+
+      kind:"punctuation",
+
+      msg:
+        "Add punctuation at the end of the sentence."
+
+    });
+
+  }
+
+
+  if(/\s+[,.!?]/.test(x)){
+
+    issues.push({
+
+      kind:"punctuation",
+
+      msg:
+        "Remove the space before the punctuation mark."
+
+    });
+
+  }
+
+
+  if(/\b(i|he|she|it)\s+are\b/i.test(x)){
+
+    issues.push({
+
+      kind:"agreement",
+
+      msg:
+        "Subject–verb agreement: use “is” with he, she, and it."
+
+    });
+
+  }
+
+
+  if(/\b(they|we|people|students)\s+is\b/i.test(x)){
+
+    issues.push({
+
+      kind:"agreement",
+
+      msg:
+        "Subject–verb agreement: plural subjects normally take “are”."
+
+    });
+
+  }
+
+
+  if(/\b(he|she|it)\s+have\b/i.test(x)){
+
+    issues.push({
+
+      kind:"agreement",
+
+      msg:
+        "Subject–verb agreement: use “has” with he, she, and it."
+
+    });
+
+  }
+
+
+  if(/\b(people|students|children)\s+has\b/i.test(x)){
+
+    issues.push({
+
+      kind:"agreement",
+
+      msg:
+        "Plural subjects normally take “have”, not “has”."
+
+    });
+
+  }
+
+
+  const fixes = {
+
+    enviroment:"environment",
+
+    healty:"healthy",
+
+    tecnology:"technology",
+
+    scince:"science",
+
+    polluation:"pollution",
+
+    excersise:"exercise",
+
+    importent:"important",
+
+    benifits:"benefits",
+
+    socety:"society",
+
+    responcibly:"responsibly"
+
+  };
+
+
+  Object.keys(fixes).forEach(word => {
+
+    if(
+      new RegExp(
+        "\\b" + word + "\\b",
+        "i"
+      ).test(x)
+    ){
+
+      issues.push({
+
+        kind:"spelling",
+
+        word:word,
+
+        msg:
+          `Spelling: “${word}” should be “${fixes[word]}”.`
+
+      });
+
+    }
+
+  });
+
+
+  [
+
+    "good",
+    "bad",
+    "nice",
+    "thing",
+    "things",
+    "stuff",
+    "very",
+    "really",
+    "big",
+    "a lot"
+
+  ].forEach(word => {
+
+    if(
+      new RegExp(
+        "\\b" +
+        word.replace(" ","\\s+") +
+        "\\b",
+        "i"
+      ).test(x)
+    ){
+
+      issues.push({
+
+        kind:"word",
+
+        word:word,
+
+        msg:
+          `“${word}” is a general word. Choose a more precise academic word from the vocabulary bank.`
+
+      });
+
+    }
+
+  });
+
+
+  const strategy =
+    $("strategy").value;
+
+
+  if(
+    strategy === "question" &&
+    !/\?$/.test(x)
+  ){
+
+    issues.push({
+
+      kind:"structure",
+
+      msg:
+        "You chose Question. End the sentence with a question mark."
+
+    });
+
+  }
+
+
+  if(
+    strategy === "quote" &&
+    !/[“"]/.test(x)
+  ){
+
+    issues.push({
+
+      kind:"structure",
+
+      msg:
+        "You chose Quote. Try starting with a short quotation and connect it to your topic."
+
+    });
+
+  }
+
+
+  if(
+    strategy === "statement" &&
+    /\?$/.test(x)
+  ){
+
+    issues.push({
+
+      kind:"structure",
+
+      msg:
+        "You chose Declarative statement. Write a statement rather than a question."
+
+    });
+
+  }
+
+
+  if(
+    strategy === "story" &&
+    !/\b(one day|when i|last year|last week|once|yesterday|a few years ago)\b/i.test(x)
+  ){
+
+    issues.push({
+
+      kind:"structure",
+
+      msg:
+        "For a story/anecdote opening, begin with a small moment or experience and connect it to the topic."
+
+    });
+
+  }
+
+
+  const score =
+    Math.max(
+      0,
+      Math.min(
+        10,
+        10 -
+        issues.length * 2 +
+        (
+          words.length >= 8 &&
+          words.length <= 25
+            ? 1
+            : 0
+        )
+      )
+    );
+
+
+  return {
+    score:score,
+    issues:issues
+  };
+
+}
+
+
+function feedback(text,r){
+
+  let marked = esc(text);
+
+
+  r.issues
+
+    .filter(
+      issue =>
+        issue.word &&
+        issue.kind === "spelling"
+    )
+
+    .forEach(issue => {
+
+      marked =
+        marked.replace(
+
+          new RegExp(
+            "\\b" +
+            issue.word +
+            "\\b",
+            "gi"
+          ),
+
+          match =>
+            `<span class="red">${match}</span>`
+
+        );
+
+    });
+
+
+  r.issues
+
+    .filter(
+      issue =>
+        issue.word &&
+        issue.kind === "word"
+    )
+
+    .forEach(issue => {
+
+      marked =
+        marked.replace(
+
+          new RegExp(
+            "\\b" +
+            issue.word.replace(
+              " ",
+              "\\s+"
+            ) +
+            "\\b",
+            "gi"
+          ),
+
+          match =>
+            `<span class="blue">${match}</span>`
+
+        );
+
+    });
+
+
+  $("marked").innerHTML =
+    marked;
+
+
+  $("messages").innerHTML =
+    r.issues.length
+
+      ?
+
+        r.issues
+
+          .map(
+            issue =>
+              `<div class="item">
+                <strong>
+                  ${
+                    issue.kind === "word"
+                      ? "Word choice"
+                      : "Check"
+                  }:
+                </strong>
+                ${issue.msg}
+              </div>`
+          )
+
+          .join("")
+
+      :
+
+        `<div class="good">
+          <strong>Excellent!</strong>
+          No obvious problems were found in this quick B1 check.
+          Make sure your sentence clearly introduces the paragraph topic.
+        </div>`;
+
+
+  $("feedback").hidden = false;
+
+  $("next").disabled = false;
+
+
+  stats.completed++;
+
+
+  if(r.score >= 8){
+
+    stats.strong++;
+
+  }else{
+
+    stats.needs++;
+
+  }
+
+
+  stats.best =
+    Math.max(
+      stats.best,
+      r.score
+    );
+
+
+  $("completed").textContent =
+    stats.completed;
+
+  $("strong").textContent =
+    stats.strong;
+
+  $("needs").textContent =
+    stats.needs;
+
+  $("best").textContent =
+    stats.best + "/10";
+
+}
+
+
+$("check").addEventListener(
+  "click",
+  () =>
+    feedback(
+      $("answer").value,
+      analyze($("answer").value)
+    )
+);
+
+
+$("next").addEventListener(
+  "click",
+  () => {
+
+    n = (n + 1) % 15;
+
+    topic =
+      n < 5
+        ? "health"
+        : n < 10
+          ? "nature"
+          : "technology";
+
+    render();
+
+  }
+);
+
+
+document
+  .querySelectorAll(".topic")
+  .forEach(button => {
+
+    button.addEventListener(
+      "click",
+      () => {
+
+        topic =
+          button.dataset.topic;
+
+        n =
+          topic === "health"
+            ? 0
+            : topic === "nature"
+              ? 5
+              : 10;
+
+        render();
+
+      }
+    );
+
+  });
+
+
+$("clear").addEventListener(
+  "click",
+  () => {
+
+    $("answer").value = "";
+
+    $("feedback").hidden = true;
+
+    $("next").disabled = true;
+
+  }
+);
+
+
+render();
+
+</script>
+
+</body>
+</html>
