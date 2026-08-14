@@ -1801,20 +1801,85 @@ why:"Academic writing often uses a more precise adjective or adverb instead of v
    SPELLING
 ========================================================= */
 
-const spelling = {
+/* =========================================================
+   AUTOMATIC SPELL CHECKING
+   LanguageTool checks the student's actual spelling.
+========================================================= */
 
-enviroment:"environment",
-healty:"healthy",
-tecnology:"technology",
-scince:"science",
-polluation:"pollution",
-excersise:"exercise",
-importent:"important",
-benifits:"benefits",
-socety:"society",
-responcibly:"responsibly"
+let spelling = {};
 
-};
+async function updateSpelling(text) {
+
+  spelling = {};
+
+  try {
+
+    const response = await fetch(
+      "https://api.languagetool.org/v2/check",
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type":
+            "application/x-www-form-urlencoded"
+        },
+
+        body: new URLSearchParams({
+          text: text,
+          language: "en-US"
+        })
+      }
+    );
+
+    if (!response.ok) {
+      console.warn("Spell checker unavailable.");
+      return;
+    }
+
+    const data = await response.json();
+
+    data.matches
+      .filter(
+        match =>
+          match.issueType === "misspelling"
+      )
+      .forEach(match => {
+
+        const wrongWord =
+          text.substring(
+            match.offset,
+            match.offset + match.length
+          );
+
+        const suggestion =
+          match.replacements &&
+          match.replacements.length
+            ? match.replacements[0].value
+            : "";
+
+        if (
+          wrongWord &&
+          suggestion
+        ) {
+
+          spelling[wrongWord] =
+            suggestion;
+
+        }
+
+      });
+
+  }
+  catch(error) {
+
+    console.warn(
+      "Automatic spelling check failed:",
+      error
+    );
+
+  }
+
+}
 
 
 /* =========================================================
@@ -3141,8 +3206,10 @@ $("check").addEventListener(
     setTimeout(
       async () => {
 
-        const result =
-          analyze(text);
+        await updateSpelling(text);
+
+const result =
+  analyze(text);
 
 
         showLearningPage(
