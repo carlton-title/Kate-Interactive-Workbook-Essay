@@ -1240,14 +1240,8 @@ textarea:focus{
 const SUPABASE_URL =
   "https://ekleolcjjpgsvlqyivyy.supabase.co";
 
-/*
-  PASTE YOUR NEW PUBLISHABLE KEY BELOW.
-  Do NOT include the quotation marks around the key.
-*/
-
 const SUPABASE_PUBLISHABLE_KEY =
   "sb_publishable_SQLHDgrKcNU9ZGAiXSehVQ_6tuYcs18";
-
 
 const supabaseClient =
   supabase.createClient(
@@ -1267,7 +1261,6 @@ const KATE_NAME =
 
 const KATE_NUMBER = "24";
 
-
 let currentStudentID = "";
 
 let currentStudentName = "";
@@ -1281,7 +1274,6 @@ let topic = "health";
 let exerciseIndex = 0;
 
 let records = [];
-
 
 const $ =
   id => document.getElementById(id);
@@ -2066,11 +2058,14 @@ function render(){
    ANALYSIS
 ========================================================= */
 
-function analyze(text){
+/* ==========================================================
+   AI ANALYZE
+========================================================== */
 
-  const issues = [];
+async function analyze(text){
 
-  const clean = text.trim();
+  const clean =
+    text.trim();
 
   if(!clean){
 
@@ -2080,179 +2075,271 @@ function analyze(text){
         type:"general",
         message:
           "Please write a topic sentence first."
-      }]
+      }],
+      corrected_sentence:"",
+      overall_feedback:"",
+      academic_vocabulary:[],
+      model_sentence:"",
+      model_topic:"",
+      model_main_idea:"",
+      model_vocabulary:[],
+      next_step:""
     };
 
   }
 
 
-  if(/^[a-z]/.test(clean)){
-
-    issues.push({
-      type:"capitalization",
-      message:
-        "Your sentence begins with a lowercase letter. Begin the sentence with a capital letter."
-    });
-
-  }
+  const exercise =
+    exercises[topic][exerciseIndex];
 
 
-  if(!/[.!?]$/.test(clean)){
+  const previousPerformance =
+    records
+      .filter(
+        r =>
+          r.topic === topic
+      )
+      .slice(0,10)
+      .map(
+        r => ({
+          original_sentence:
+            r.original_sentence,
 
-    issues.push({
-      type:"punctuation",
-      message:
-        "Your sentence needs an appropriate punctuation mark at the end."
-    });
+          corrected_sentence:
+            r.corrected_sentence,
 
-  }
+          teacher_feedback:
+            r.teacher_feedback,
 
-
-  if(/\s+[,.!?]/.test(clean)){
-
-    issues.push({
-      type:"punctuation",
-      message:
-        "Do not put a space before a punctuation mark."
-    });
-
-  }
-
-
-  if(/\b(he|she|it)\s+are\b/i.test(clean)){
-
-    issues.push({
-      type:"agreement",
-      word:"are",
-      message:
-        "Use “is” with a singular subject such as he, she, or it."
-    });
-
-  }
+          score:
+            r.score
+        })
+      );
 
 
-  if(/\b(people|students|children|they|we)\s+is\b/i.test(clean)){
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .functions
+      .invoke(
+        "essay-ai-tutor",
+        {
+          body:{
+            studentId:
+              currentStudentID,
 
-    issues.push({
-      type:"agreement",
-      word:"is",
-      message:
-        "Use “are” with plural subjects such as people, students, children, they, and we."
-    });
+            topic:
+              topic,
 
-  }
+            prompt:
+              exercise.prompt,
 
+            strategy:
+              $("strategy").value,
 
-  if(/\b(he|she|it)\s+have\b/i.test(clean)){
+            sentence:
+              clean,
 
-    issues.push({
-      type:"agreement",
-      word:"have",
-      message:
-        "Use “has” with a singular subject."
-    });
-
-  }
+            previousPerformance:
+              previousPerformance
+          }
+        }
+      );
 
 
-  if(/\b(people|students|children|they|we)\s+has\b/i.test(clean)){
+  if(error){
 
-    issues.push({
-      type:"agreement",
-      word:"has",
-      message:
-        "Use “have” with a plural subject."
-    });
+    console.error(
+      "AI Tutor error:",
+      error
+    );
+
+    throw new Error(
+      "The writing feedback could not be generated."
+    );
 
   }
 
 
-  Object.keys(spelling)
-    .forEach(word => {
+  if(!data){
 
-      if(
-        new RegExp(
-          "\\b"+word+"\\b",
-          "i"
-        ).test(clean)
-      ){
-
-        issues.push({
-          type:"spelling",
-          word:word,
-          message:
-            `“${word}” is misspelled. The correct spelling is “${spelling[word]}.”`
-        });
-
-      }
-
-    });
-
-
-  Object.keys(academicWords)
-    .forEach(word => {
-
-      if(
-        new RegExp(
-          "\\b"+word+"\\b",
-          "i"
-        ).test(clean)
-      ){
-
-        issues.push({
-          type:"word",
-          word:word,
-          message:
-            `“${word}” is understandable, but it is general vocabulary. Stronger academic choices are ${academicWords[word].words}.`
-        });
-
-      }
-
-    });
-
-
-  const wordCount =
-    clean.split(/\s+/).length;
-
-
-  if(wordCount < 8){
-
-    issues.push({
-      type:"development",
-      message:
-        "Your idea needs more development. A strong topic sentence should identify the topic and clearly tell the reader the main point of the paragraph."
-    });
+    throw new Error(
+      "The writing tutor returned no result."
+    );
 
   }
 
 
-  let score =
-    10 - issues.length * 1.5;
+  const issues =
+    (data.issues || [])
+      .map(
+        issue => {
+
+          const category =
+            (
+              issue.category ||
+              ""
+            ).toLowerCase();
 
 
-  score =
-    Math.round(
+          let type =
+            "grammar";
+
+
+          if(
+            category.includes(
+              "spelling"
+            )
+          ){
+
+            type =
+              "spelling";
+
+          }
+
+          else if(
+            category.includes(
+              "capital"
+            )
+          ){
+
+            type =
+              "capitalization";
+
+          }
+
+          else if(
+            category.includes(
+              "punctuation"
+            )
+          ){
+
+            type =
+              "punctuation";
+
+          }
+
+          else if(
+            category.includes(
+              "vocabulary"
+            ) ||
+            category.includes(
+              "word"
+            )
+          ){
+
+            type =
+              "word";
+
+          }
+
+          else if(
+            category.includes(
+              "agreement"
+            )
+          ){
+
+            type =
+              "agreement";
+
+          }
+
+
+          return {
+
+            type:
+
+              type,
+
+            word:
+              issue.original || "",
+
+            message:
+
+              `<strong>${
+                issue.explanation || ""
+              }</strong>` +
+
+              (
+                issue.correction
+                  ? `<br><br><strong>Use:</strong> ${
+                      issue.correction
+                    }`
+                  : ""
+              )
+
+          };
+
+        }
+      );
+
+
+  return {
+
+    score:
       Math.max(
         0,
         Math.min(
           10,
-          score
+          Number(data.score) || 0
         )
-      )
-    );
+      ),
 
+    issues:
 
-  return {
-    score,
-    issues
+      issues,
+
+    corrected_sentence:
+
+      data.corrected_sentence ||
+      clean,
+
+    overall_feedback:
+
+      data.overall_feedback ||
+      "",
+
+    academic_vocabulary:
+
+      data.academic_vocabulary ||
+      [],
+
+    model_sentence:
+
+      data.model_sentence ||
+      "",
+
+    model_topic:
+
+      data.model_topic ||
+      "",
+
+    model_main_idea:
+
+      data.model_main_idea ||
+      "",
+
+    model_vocabulary:
+
+      data.model_vocabulary ||
+      [],
+
+    next_step:
+
+      data.next_step ||
+      "",
+
+    skill_status:
+
+      data.skill_status ||
+      {}
+
   };
 
 }
 
-
-/* =========================================================
-   CORRECTION
-========================================================= */
 
 function correctedSentence(text){
 
@@ -2280,19 +2367,16 @@ function correctedSentence(text){
 
   });
 
-  /* Remove spaces before punctuation */
   result = result.replace(
     /\s+([,.!?])/g,
     "$1"
   );
 
-  /* Capitalize the first letter */
   result = result.replace(
     /^([a-z])/,
     letter => letter.toUpperCase()
   );
 
-  /* Add final punctuation if missing */
   if (
     result &&
     !/[.!?]$/.test(result)
@@ -2507,122 +2591,33 @@ function showLearningPage(
 
   let explanation = "";
 
-
-  if(
-    result.issues.some(
-      i => i.type === "capitalization"
-    )
-  ){
+  if(result.overall_feedback){
 
     explanation += `
       <p>
-        <strong>Capitalization:</strong>
-        English sentences begin with a capital letter.
-        Proper nouns also require capital letters.
+        ${escapeHTML(result.overall_feedback)}
       </p>
     `;
 
   }
 
-
-  if(
-    result.issues.some(
-      i => i.type === "agreement"
-    )
-  ){
+  if(result.issues && result.issues.length){
 
     explanation += `
       <p>
-        <strong>Subject–verb agreement:</strong>
-        A singular subject takes a singular verb,
-        while a plural subject takes a plural verb.
+        Study the explanations above, then compare
+        your original sentence with the corrected
+        version below.
       </p>
     `;
 
-  }
-
-
-  if(
-    result.issues.some(
-      i => i.type === "punctuation"
-    )
-  ){
+  } else {
 
     explanation += `
       <p>
-        <strong>Punctuation:</strong>
-        A complete statement normally ends with
-        a period. A direct question ends with
-        a question mark.
-      </p>
-    `;
-
-  }
-
-
-  if(
-    result.issues.some(
-      i => i.type === "spelling"
-    )
-  ){
-
-    explanation += `
-      <p>
-        <strong>Spelling:</strong>
-        Check the spelling carefully because
-        spelling errors can make academic writing
-        difficult to understand.
-      </p>
-    `;
-
-  }
-
-
-  if(
-    result.issues.some(
-      i => i.type === "word"
-    )
-  ){
-
-    explanation += `
-      <p>
-        <strong>Academic vocabulary:</strong>
-        Academic writing normally uses precise
-        vocabulary rather than very general words.
-        Study the replacement words below and
-        try to use them in your next sentence.
-      </p>
-    `;
-
-  }
-
-
-  if(
-    result.issues.some(
-      i => i.type === "development"
-    )
-  ){
-
-    explanation += `
-      <p>
-        <strong>Topic sentence structure:</strong>
-        A strong topic sentence tells the reader
-        the topic and gives a clear main idea.
-        It should prepare the reader for the
-        information that will follow in the paragraph.
-      </p>
-    `;
-
-  }
-
-
-  if(!explanation){
-
-    explanation = `
-      <p>
-        Your sentence is grammatically strong.
-        Now focus on making your vocabulary
-        precise and your main idea clear.
+        Your sentence is developing well.
+        Now focus on making your vocabulary precise
+        and your main idea clear.
       </p>
     `;
 
@@ -2636,12 +2631,13 @@ function showLearningPage(
   /* CORRECTED */
 
   $("corrected").textContent =
-    correctedSentence(text);
+    result.corrected_sentence || text;
 
 
   /* MODEL */
 
   $("modelSentence").textContent =
+    result.model_sentence ||
     exercise.model;
 
 
@@ -2653,7 +2649,12 @@ function showLearningPage(
 
       <br><br>
 
-      ${exercise.topicPart}
+      ${
+        escapeHTML(
+          result.model_topic ||
+          exercise.topicPart
+        )
+      }
 
     </div>
 
@@ -2664,7 +2665,12 @@ function showLearningPage(
 
       <br><br>
 
-      ${exercise.mainIdea}
+      ${
+        escapeHTML(
+          result.model_main_idea ||
+          exercise.mainIdea
+        )
+      }
 
     </div>
 
@@ -2675,7 +2681,13 @@ function showLearningPage(
 
       <br><br>
 
-      ${exercise.vocab}
+      ${
+        escapeHTML(
+          (result.model_vocabulary || [])
+            .join(", ") ||
+          exercise.vocab
+        )
+      }
 
     </div>
 
@@ -2684,39 +2696,46 @@ function showLearningPage(
 
   /* ACADEMIC WORDS USED */
 
-  let usedWords = [];
+  const vocabularyLessons =
+    result.academic_vocabulary || [];
 
+  if(vocabularyLessons.length){
 
-  result.issues
-    .filter(
-      i => i.type === "word"
-    )
-    .forEach(issue => {
+    const usedWords =
+      vocabularyLessons.map(item => {
 
-      usedWords.push(`
+        const original =
+          escapeHTML(item.original || "");
 
-        <tr>
+        const alternatives =
+          (item.alternatives || [])
+            .map(word => escapeHTML(word))
+            .join(" / ");
 
-          <td class="old-word">
-            ${issue.word}
-          </td>
+        const explanation =
+          escapeHTML(item.explanation || "");
 
-          <td class="new-word">
-            ${academicWords[issue.word].words}
-          </td>
+        return `
 
-          <td>
-            ${academicWords[issue.word].why}
-          </td>
+          <tr>
 
-        </tr>
+            <td class="old-word">
+              ${original}
+            </td>
 
-      `);
+            <td class="new-word">
+              ${alternatives}
+            </td>
 
-    });
+            <td>
+              ${explanation}
+            </td>
 
+          </tr>
 
-  if(usedWords.length){
+        `;
+
+      }).join("");
 
     $("teacherText").innerHTML += `
 
@@ -2732,7 +2751,7 @@ function showLearningPage(
           <th>How to Use Them</th>
         </tr>
 
-        ${usedWords.join("")}
+        ${usedWords}
 
       </table>
 
@@ -2743,43 +2762,22 @@ function showLearningPage(
 
   /* NEXT STEP */
 
-  if(result.score >= 8){
+  $("nextStep").innerHTML = `
 
-    $("nextStep").innerHTML = `
+    <p>
+      ${
+        escapeHTML(
+          result.next_step ||
+          (
+            result.score >= 8
+              ? "Your sentence is developing well. For your next attempt, make your main idea even more specific."
+              : "Rewrite your sentence by correcting the problems identified above and then compare it with the model sentence."
+          )
+        )
+      }
+    </p>
 
-      <p>
-        🌟 Your sentence is developing well.
-        For your next attempt, try using one
-        of the academic vocabulary words from
-        the lesson and make your main idea
-        even more specific.
-      </p>
-
-    `;
-
-  }
-  else{
-
-    $("nextStep").innerHTML = `
-
-      <p>
-        ✏️ Rewrite your sentence.
-        First correct the red-marked errors.
-        Then replace any blue-marked general
-        vocabulary with one of the academic
-        choices provided above.
-      </p>
-
-      <p>
-        ⭐ Use the model sentence as a guide.
-        Pay attention to how it introduces
-        the topic and clearly states the
-        main idea.
-      </p>
-
-    `;
-
-  }
+  `;
 
 
   $("feedback")
@@ -2836,6 +2834,7 @@ async function saveSubmission(
           ),
 
         corrected_sentence:
+          result.corrected_sentence ||
           correctedSentence(text),
 
         teacher_feedback:
@@ -2899,23 +2898,25 @@ function generateRecordFeedback(
 ){
 
   let feedback =
-    result.score >= 8
-      ? "Your topic sentence is developing well. "
-      : "Your topic sentence needs revision. ";
+    result.overall_feedback ||
+    (
+      result.score >= 8
+        ? "Your topic sentence is developing well."
+        : "Your topic sentence needs revision."
+    );
 
 
-  result.issues.forEach(
-    issue => {
+  if(result.next_step){
 
-      feedback +=
-        issue.message + " ";
+    feedback +=
+      " Next step: " +
+      result.next_step;
 
-    }
-  );
+  }
 
 
   feedback +=
-    "Strong model: " +
+    " Strong model: " +
     exercise.model;
 
 
@@ -3178,58 +3179,72 @@ $("check").addEventListener(
       .remove("show");
 
 
-    setTimeout(
-      async () => {
+    try {
 
-        await updateSpelling(text);
+      await updateSpelling(text);
 
-const result =
-  analyze(text);
-
-
-        showLearningPage(
-          text,
-          result
-        );
+      const result =
+        await analyze(text);
 
 
-        const attempts =
-          records.filter(
-            r =>
-              r.topic === topic &&
-              r.exercise_number ===
-                exerciseIndex + 1
-          ).length;
+      showLearningPage(
+        text,
+        result
+      );
 
 
-        await saveSubmission(
-          text,
-          result,
-          attempts + 1
-        );
+      const attempts =
+        records.filter(
+          r =>
+            r.topic === topic &&
+            r.exercise_number ===
+              exerciseIndex + 1
+        ).length;
 
 
-        await loadRecords();
+      await saveSubmission(
+        text,
+        result,
+        attempts + 1
+      );
 
 
-        $("analyzing")
-          .classList
-          .remove("show");
+      await loadRecords();
 
 
-        $("next").disabled = false;
-
-        $("check").disabled = false;
+      $("next").disabled = false;
 
 
-        $("feedback")
-          .scrollIntoView({
-            behavior:"smooth"
-          });
+      $("feedback")
+        .scrollIntoView({
+          behavior:"smooth"
+        });
 
-      },
-      700
-    );
+    }
+    catch(error){
+
+      console.error(
+        "Analysis failed:",
+        error
+      );
+
+      $("saveStatus").textContent =
+        "⚠️ The feedback could not be generated. Please try again.";
+
+      $("saveStatus")
+        .className =
+        "save-status save-error";
+
+    }
+    finally{
+
+      $("analyzing")
+        .classList
+        .remove("show");
+
+      $("check").disabled = false;
+
+    }
 
   }
 );
