@@ -7,111 +7,128 @@
 
 <style>
 :root{
-  --accent:#2563eb;
+  --blue:#2563eb;
+  --darkblue:#123a72;
+  --teal:#0f766e;
+  --orange:#ea580c;
+  --red:#dc2626;
+  --green:#15803d;
+  --purple:#7c3aed;
   --bg:#eef5ff;
   --card:#ffffff;
   --text:#172033;
   --muted:#64748b;
   --border:#cbd8ee;
-  --red:#dc2626;
-  --blue:#2563eb;
-  --teal:#0f766e;
-  --orange:#ea580c;
 }
 
-*{
-  box-sizing:border-box;
-}
+*{box-sizing:border-box}
 
 body{
   margin:0;
-  background:
-    radial-gradient(circle at 10% 5%, rgba(37,99,235,.14), transparent 28%),
-    radial-gradient(circle at 90% 12%, rgba(15,118,110,.12), transparent 25%),
-    linear-gradient(135deg,#eef5ff 0%,#f8fbff 55%,#eefcf9 100%);
-  font-family:Arial,sans-serif;
+  font-family:Arial,Helvetica,sans-serif;
   color:var(--text);
+  background:
+    radial-gradient(circle at 10% 5%,rgba(37,99,235,.15),transparent 28%),
+    radial-gradient(circle at 90% 10%,rgba(15,118,110,.13),transparent 25%),
+    linear-gradient(135deg,#eef5ff,#f8fbff,#eefcf9);
 }
 
 main{
-  max-width:850px;
+  max-width:950px;
   margin:auto;
-  padding:22px 14px 40px;
+  padding:20px 14px 50px;
 }
 
-.top{
+/* HEADER */
+
+.header{
+  background:linear-gradient(135deg,var(--darkblue),var(--blue),var(--teal));
+  color:white;
+  padding:22px;
+  border-radius:20px;
+  box-shadow:0 8px 25px rgba(37,99,235,.2);
+}
+
+.header-row{
   display:flex;
   justify-content:space-between;
-  gap:12px;
   align-items:center;
+  gap:15px;
   flex-wrap:wrap;
-  padding:18px 20px;
-  border-radius:18px;
-  background:linear-gradient(135deg,#123a72,#2563eb 55%,#0f766e);
-  color:white;
-  box-shadow:0 8px 24px rgba(37,99,235,.18);
 }
 
-.top h1{
-  font-size:28px;
-  margin:0 0 5px;
-}
-
-.sub{
-  color:#dbeafe;
+.header h1{
   margin:0;
+  font-size:30px;
 }
 
-.badge{
-  background:#ffffff;
+.header p{
+  margin:6px 0 0;
+  color:#dbeafe;
+}
+
+.progress{
+  background:white;
   color:#1d4ed8;
-  padding:7px 11px;
-  border-radius:999px;
+  padding:8px 13px;
+  border-radius:30px;
   font-weight:bold;
 }
 
+/* CARDS */
+
 .card{
-  background:rgba(255,255,255,.96);
+  background:rgba(255,255,255,.97);
   border:1px solid var(--border);
   border-radius:16px;
   padding:18px;
-  margin-top:14px;
+  margin-top:15px;
   box-shadow:0 4px 14px rgba(30,64,175,.07);
 }
 
-.tabs{
+.student-info{
+  display:grid;
+  grid-template-columns:2fr 1fr 1fr;
+  gap:12px;
+  background:linear-gradient(135deg,#eff6ff,#ecfeff);
+}
+
+.info-label{
+  font-size:12px;
+  color:var(--muted);
+  text-transform:uppercase;
+  font-weight:bold;
+}
+
+.info-value{
+  margin-top:4px;
+  font-weight:bold;
+}
+
+/* TOPIC BUTTONS */
+
+.topic-buttons{
   display:grid;
   grid-template-columns:repeat(3,1fr);
-  gap:8px;
+  gap:9px;
 }
 
-.tabs button{
-  padding:12px;
+.topic-buttons button{
   border:2px solid var(--border);
   background:white;
-  border-radius:11px;
-  cursor:pointer;
+  border-radius:12px;
+  padding:13px;
   font-weight:bold;
-  color:#334155;
+  cursor:pointer;
 }
 
-.tabs button:nth-child(1).active{
-  background:#dbeafe;
-  border-color:#2563eb;
-  color:#1d4ed8;
+.topic-buttons button.active{
+  color:white;
+  background:linear-gradient(135deg,var(--blue),var(--teal));
+  border-color:var(--blue);
 }
 
-.tabs button:nth-child(2).active{
-  background:#ccfbf1;
-  border-color:#0f766e;
-  color:#0f766e;
-}
-
-.tabs button:nth-child(3).active{
-  background:#ffedd5;
-  border-color:#ea580c;
-  color:#c2410c;
-}
+/* FORM */
 
 label{
   display:block;
@@ -132,154 +149,339 @@ textarea{
 select:focus,
 textarea:focus{
   outline:3px solid rgba(37,99,235,.15);
-  border-color:#2563eb;
+  border-color:var(--blue);
 }
 
 textarea{
-  min-height:125px;
+  min-height:130px;
   resize:vertical;
 }
 
 .prompt{
-  background:linear-gradient(90deg,#e0f2fe,#eff6ff);
-  border-left:5px solid #2563eb;
-  padding:14px;
-  border-radius:9px;
   margin:15px 0;
+  padding:15px;
+  background:linear-gradient(90deg,#e0f2fe,#eff6ff);
+  border-left:5px solid var(--blue);
+  border-radius:9px;
 }
 
-.vocab{
+.vocabulary{
   display:flex;
   flex-wrap:wrap;
   gap:7px;
-  margin:9px 0 16px;
+  margin:10px 0 18px;
 }
 
-.vocab button{
+.vocabulary button{
   border:1px solid #93c5fd;
   background:#eff6ff;
   color:#1e40af;
-  border-radius:999px;
-  padding:7px 10px;
-  cursor:pointer;
-  font-weight:600;
-}
-
-.vocab button:hover{
-  background:#dbeafe;
-}
-
-.actions{
-  display:flex;
-  gap:9px;
-  flex-wrap:wrap;
-  margin-top:12px;
-}
-
-.actions button{
-  padding:10px 15px;
-  border-radius:10px;
-  border:2px solid var(--border);
-  background:white;
+  border-radius:30px;
+  padding:7px 11px;
   cursor:pointer;
   font-weight:bold;
 }
 
-.actions .primary{
-  background:linear-gradient(135deg,#2563eb,#0f766e);
-  color:white;
-  border-color:#2563eb;
+.actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:9px;
+  margin-top:12px;
 }
 
-button:disabled{
-  opacity:.5;
+.actions button{
+  border:2px solid var(--border);
+  background:white;
+  padding:11px 16px;
+  border-radius:10px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.actions .primary{
+  background:linear-gradient(135deg,var(--blue),var(--teal));
+  color:white;
+  border-color:var(--blue);
+}
+
+.actions button:disabled{
+  opacity:.45;
   cursor:not-allowed;
 }
 
-.feedback{
+/* FEEDBACK */
+
+.feedback-box{
   margin-top:15px;
+  padding:17px;
+  border-radius:13px;
+  background:linear-gradient(135deg,#eff6ff,#f0fdfa);
+  border:1px solid #93c5fd;
+  line-height:1.7;
 }
 
-.sentence{
-  font-size:20px;
-  line-height:1.7;
-  padding:13px;
-  border:1px solid var(--border);
-  border-radius:11px;
-  background:#fff;
+.feedback-title{
+  color:#1d4ed8;
+  font-weight:bold;
+  font-size:18px;
 }
+
+.marked-sentence{
+  margin-top:12px;
+  background:white;
+  padding:16px;
+  border:1px solid var(--border);
+  border-radius:12px;
+  font-size:21px;
+  line-height:1.8;
+}
+
+/* ANNOTATIONS */
 
 .red{
   color:var(--red);
   text-decoration:underline wavy var(--red);
+  text-decoration-thickness:2px;
 }
 
 .blue{
-  color:var(--blue);
-  text-decoration:underline var(--blue);
+  color:#2563eb;
+  text-decoration:underline;
+  text-decoration-thickness:2px;
 }
 
-.note{
-  font-size:14px;
+.circle{
+  display:inline-block;
+  border:2px solid var(--red);
+  border-radius:50%;
+  padding:1px 5px;
+}
+
+.square{
+  display:inline-block;
+  border:2px solid var(--red);
+  padding:1px 4px;
+  border-radius:3px;
+}
+
+.green{
+  color:var(--green);
+  font-weight:bold;
+}
+
+.annotation-key{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-top:12px;
+  font-size:13px;
   color:var(--muted);
+}
+
+.correction{
+  margin-top:15px;
+  padding:15px;
+  background:#ecfdf5;
+  border-left:5px solid var(--green);
+  border-radius:10px;
+}
+
+.correction h3{
+  margin:0 0 7px;
+  color:var(--green);
+}
+
+.correction-text{
+  font-size:20px;
+  line-height:1.7;
+}
+
+/* FEEDBACK ITEMS */
+
+.feedback-item{
+  margin-top:9px;
+  padding:12px;
+  border-left:4px solid var(--blue);
+  background:#f8fafc;
+  border-radius:7px;
+}
+
+.teacher-focus{
+  display:inline-block;
+  margin-top:10px;
+  background:#ffedd5;
+  color:#c2410c;
+  padding:6px 10px;
+  border-radius:20px;
+  font-weight:bold;
+  font-size:13px;
+}
+
+/* COMPLETED WORK */
+
+.completed-header{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+
+.completed-count{
+  background:#dbeafe;
+  color:#1d4ed8;
+  padding:7px 11px;
+  border-radius:20px;
+  font-weight:bold;
+}
+
+.work-entry{
+  margin-top:15px;
+  border:1px solid var(--border);
+  border-radius:14px;
+  overflow:hidden;
+  background:white;
+}
+
+.work-header{
+  background:linear-gradient(90deg,#eff6ff,#ecfeff);
+  padding:13px;
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:center;
+  flex-wrap:wrap;
+  border-bottom:1px solid var(--border);
+}
+
+.work-title{
+  font-weight:bold;
+  color:#1e3a8a;
+}
+
+.score{
+  color:var(--green);
+  font-weight:bold;
+}
+
+.work-body{
+  padding:15px;
+}
+
+.meta{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+  margin-bottom:14px;
+}
+
+.meta span{
+  background:#f1f5f9;
+  padding:5px 9px;
+  border-radius:20px;
+  font-size:12px;
+  font-weight:bold;
+  color:#475569;
+}
+
+.section-label{
+  font-size:12px;
+  color:var(--muted);
+  text-transform:uppercase;
+  font-weight:bold;
+  margin-bottom:5px;
+}
+
+.original{
+  background:#fff7f7;
+  border-left:4px solid var(--red);
+  padding:11px;
+  border-radius:8px;
+  font-size:18px;
+  line-height:1.6;
+}
+
+.corrected{
+  background:#f0fdf4;
+  border-left:4px solid var(--green);
+  padding:11px;
+  border-radius:8px;
+  font-size:18px;
+  line-height:1.6;
   margin-top:8px;
 }
 
-.item{
-  padding:11px;
-  border-left:4px solid #2563eb;
-  margin:8px 0;
+.teacher-record{
   background:#f8fafc;
-  border-radius:5px;
+  padding:12px;
+  border-radius:9px;
+  margin-top:12px;
+  line-height:1.6;
 }
 
-.good{
-  padding:13px;
-  background:#ecfdf5;
-  border-left:4px solid #0f766e;
-  border-radius:10px;
+.teacher-record ul{
+  margin-bottom:5px;
 }
+
+/* STATS */
 
 .stats{
   display:grid;
   grid-template-columns:repeat(4,1fr);
-  gap:8px;
-  margin-top:14px;
+  gap:9px;
+  margin-top:15px;
 }
 
 .stat{
   background:white;
   border:1px solid var(--border);
   border-radius:12px;
-  padding:12px;
+  padding:13px;
 }
 
-.num{
-  font-size:24px;
-  font-weight:bold;
-  color:#1d4ed8;
-}
-
-.small{
-  font-size:13px;
+.stat-label{
+  font-size:12px;
   color:var(--muted);
 }
 
-@media(max-width:600px){
+.stat-number{
+  font-size:25px;
+  font-weight:bold;
+  color:#1d4ed8;
+  margin-top:3px;
+}
+
+.empty{
+  text-align:center;
+  color:var(--muted);
+  padding:20px;
+  border:1px dashed #93c5fd;
+  border-radius:10px;
+  margin-top:12px;
+}
+
+/* MOBILE */
+
+@media(max-width:650px){
+
+  .header h1{
+    font-size:24px;
+  }
+
+  .student-info{
+    grid-template-columns:1fr;
+  }
+
+  .topic-buttons{
+    grid-template-columns:1fr;
+  }
+
   .stats{
     grid-template-columns:repeat(2,1fr);
   }
 
-  .tabs{
-    grid-template-columns:1fr;
-  }
-
-  .top h1{
-    font-size:23px;
-  }
-
-  .card > div[style*="grid-template-columns:2fr 1fr 1fr"]{
-    grid-template-columns:1fr !important;
+  .marked-sentence{
+    font-size:18px;
   }
 }
 </style>
@@ -289,724 +491,1003 @@ button:disabled{
 
 <main>
 
-  <div class="top">
+<!-- HEADER -->
+
+<div class="header">
+
+  <div class="header-row">
 
     <div>
       <h1>Kate Interactive Workbook Essay</h1>
-      <p class="sub">B1 Topic Sentence Workbook</p>
+      <p>B1 Topic Sentence Writing Practice</p>
     </div>
 
-    <div class="badge" id="progress">
+    <div class="progress" id="progress">
       Practice 1 / 15
     </div>
 
   </div>
 
+</div>
 
-  <!-- STUDENT INFORMATION -->
 
-  <div class="card"
-       style="background:linear-gradient(135deg,#eff6ff,#ecfeff);border-color:#93c5fd;">
+<!-- STUDENT INFORMATION -->
 
-    <div style="display:grid;
-                grid-template-columns:2fr 1fr 1fr;
-                gap:10px;
-                align-items:center;">
+<div class="card student-info">
 
-      <div>
-        <div class="small">Student Name</div>
-        <strong>นายรัฐธีร์ รพีไชยรุจน์</strong>
-      </div>
+  <div>
+    <div class="info-label">Student Name</div>
+    <div class="info-value">นายรัฐธีร์ รพีไชยรุจน์</div>
+  </div>
 
-      <div>
-        <div class="small">Student ID</div>
-        <strong>39532</strong>
-      </div>
+  <div>
+    <div class="info-label">Student ID</div>
+    <div class="info-value">39532</div>
+  </div>
 
-      <div>
-        <div class="small">Number</div>
-        <strong>24</strong>
-      </div>
+  <div>
+    <div class="info-label">Number</div>
+    <div class="info-value">24</div>
+  </div>
 
-    </div>
+</div>
+
+
+<!-- TOPICS -->
+
+<div class="card">
+
+  <div class="topic-buttons">
+
+    <button class="topic active" data-topic="health">
+      ❤️ Health
+    </button>
+
+    <button class="topic" data-topic="nature">
+      🌿 Nature
+    </button>
+
+    <button class="topic" data-topic="technology">
+      💻 Science &amp; Technology
+    </button>
+
+  </div>
+
+</div>
+
+
+<!-- WRITING ACTIVITY -->
+
+<div class="card">
+
+  <label for="strategy">
+    Choose your topic-sentence strategy
+  </label>
+
+  <select id="strategy">
+
+    <option value="quote">
+      Quote
+    </option>
+
+    <option value="question">
+      Question
+    </option>
+
+    <option value="statement">
+      Declarative Statement
+    </option>
+
+    <option value="hook">
+      Hook
+    </option>
+
+    <option value="story">
+      Short Story / Anecdote
+    </option>
+
+  </select>
+
+
+  <div class="prompt">
+
+    <strong>Your Writing Task</strong>
+
+    <div id="prompt"></div>
 
   </div>
 
 
-  <!-- ESSAY TOPICS -->
+  <label>
+    Vocabulary Bank
+  </label>
 
-  <div class="card">
+  <div class="vocabulary" id="vocabulary"></div>
 
-    <div class="tabs">
 
-      <button class="topic active"
-              data-topic="health">
-        1. Health
-      </button>
+  <label for="answer">
+    Write ONE topic sentence
+  </label>
 
-      <button class="topic"
-              data-topic="nature">
-        2. Nature
-      </button>
+  <textarea
+    id="answer"
+    placeholder="Write your topic sentence here..."
+  ></textarea>
 
-      <button class="topic"
-              data-topic="technology">
-        3. Science &amp; Technology
-      </button>
+  <div style="font-size:13px;color:#64748b;margin-top:7px;">
+    Write one sentence only. Your sentence should introduce the main idea of the paragraph.
+  </div>
 
-    </div>
+
+  <div class="actions">
+
+    <button class="primary" id="check">
+      Check My Sentence
+    </button>
+
+    <button id="next" disabled>
+      Next Practice
+    </button>
+
+    <button id="clear">
+      Clear
+    </button>
+
+  </div>
+
+</div>
+
+
+<!-- CURRENT FEEDBACK -->
+
+<div class="card" id="feedback" hidden>
+
+  <div class="feedback-title">
+    👨‍🏫 Teacher Feedback
+  </div>
+
+  <div class="feedback-box" id="teacherFeedback">
+  </div>
+
+
+  <h3>
+    Your Annotated Sentence
+  </h3>
+
+  <div class="marked-sentence" id="marked">
+  </div>
+
+
+  <div class="annotation-key">
+
+    <span>
+      <b class="red">Red underline</b> = error
+    </span>
+
+    <span>
+      <b class="blue">Blue underline</b> = weak word
+    </span>
+
+    <span>
+      <b class="circle">circle</b> = grammar problem
+    </span>
+
+    <span>
+      <b class="square">box</b> = correction needed
+    </span>
+
+    <span>
+      <b class="green">Green</b> = corrected form
+    </span>
 
   </div>
 
 
-  <!-- WRITING ACTIVITY -->
-
-  <div class="card">
-
-    <label for="strategy">
-      Choose your opening strategy
-    </label>
-
-    <select id="strategy">
-
-      <option value="quote">
-        Quote
-      </option>
-
-      <option value="question">
-        Question
-      </option>
-
-      <option value="statement">
-        Declarative statement
-      </option>
-
-      <option value="hook">
-        Hook
-      </option>
-
-      <option value="story">
-        Short story / anecdote
-      </option>
-
-    </select>
+  <div id="feedbackItems"></div>
 
 
-    <div class="prompt">
+  <div class="correction">
 
-      <strong>Your task:</strong>
-
-      <div id="prompt"></div>
-
-    </div>
-
-
-    <label>
-      Vocabulary you can use
-    </label>
-
-    <div class="vocab"
-         id="vocab">
-    </div>
-
-
-    <label for="answer">
-      Write ONE topic sentence
-    </label>
-
-    <textarea
-      id="answer"
-      placeholder="Write your topic sentence here..."
-    ></textarea>
-
-    <div class="note">
-      Aim for one clear sentence.
-      Your topic sentence should introduce the main idea of the paragraph.
-    </div>
-
-
-    <div class="actions">
-
-      <button
-        class="primary"
-        id="check">
-        Check My Sentence
-      </button>
-
-      <button
-        id="next"
-        disabled>
-        Next Practice
-      </button>
-
-      <button
-        id="clear">
-        Clear
-      </button>
-
-    </div>
-
-  </div>
-
-
-  <!-- FEEDBACK -->
-
-  <div
-    class="card feedback"
-    id="feedback"
-    hidden>
-
-    <h2>
-      Auto Feedback
-    </h2>
+    <h3>
+      ✅ Corrected Version
+    </h3>
 
     <div
-      class="sentence"
-      id="marked">
+      class="correction-text"
+      id="corrected">
     </div>
 
-    <div class="note">
+  </div>
 
-      <span class="red">
-        Red
-      </span>
+</div>
 
-      =
-      spelling, punctuation, grammar, or sentence structure
 
-      &nbsp; | &nbsp;
+<!-- PROGRESS STATISTICS -->
 
-      <span class="blue">
-        Blue
-      </span>
+<div class="stats">
 
-      =
-      weak choice of words
+  <div class="stat">
+    <div class="stat-label">Exercises Completed</div>
+    <div class="stat-number" id="completed">0</div>
+  </div>
 
+  <div class="stat">
+    <div class="stat-label">Strong</div>
+    <div class="stat-number" id="strong">0</div>
+  </div>
+
+  <div class="stat">
+    <div class="stat-label">Needs Work</div>
+    <div class="stat-number" id="needs">0</div>
+  </div>
+
+  <div class="stat">
+    <div class="stat-label">Best Score</div>
+    <div class="stat-number" id="best">—</div>
+  </div>
+
+</div>
+
+
+<!-- COMPLETED WORK -->
+
+<div class="card">
+
+  <div class="completed-header">
+
+    <div>
+      <h2 style="margin:0">
+        📚 Completed Work &amp; Progress
+      </h2>
+
+      <div style="color:#64748b;font-size:14px;margin-top:5px;">
+        Your completed work is recorded here for review.
+      </div>
     </div>
 
-    <div id="messages"></div>
+    <div
+      class="completed-count"
+      id="completedCount">
+      0 completed
+    </div>
 
   </div>
 
 
-  <!-- PROGRESS -->
+  <div id="completedWork">
 
-  <div class="stats">
-
-    <div class="stat">
-
-      <div class="small">
-        Completed
-      </div>
-
-      <div
-        class="num"
-        id="completed">
-        0
-      </div>
-
-    </div>
-
-
-    <div class="stat">
-
-      <div class="small">
-        Strong
-      </div>
-
-      <div
-        class="num"
-        id="strong">
-        0
-      </div>
-
-    </div>
-
-
-    <div class="stat">
-
-      <div class="small">
-        Needs work
-      </div>
-
-      <div
-        class="num"
-        id="needs">
-        0
-      </div>
-
-    </div>
-
-
-    <div class="stat">
-
-      <div class="small">
-        Best score
-      </div>
-
-      <div
-        class="num"
-        id="best">
-        —
-      </div>
-
+    <div class="empty">
+      Complete your first exercise to create your writing record.
     </div>
 
   </div>
+
+</div>
 
 </main>
 
 
 <script>
 
-const sets = {
+/* ============================================================
+   EXERCISE CONTENT
+============================================================ */
 
-  health: {
+const exercises = {
 
-    prompts: [
+  health: [
 
-      "Write a topic sentence about why healthy habits are important for students.",
+    {
+      prompt:"Write a topic sentence about why healthy habits are important for students.",
+      words:[
+        "healthy habits",
+        "physical health",
+        "mental health",
+        "regular exercise",
+        "balanced diet",
+        "well-being",
+        "prevent illness",
+        "daily routine"
+      ]
+    },
 
-      "Write a topic sentence explaining how exercise can improve a person's life.",
+    {
+      prompt:"Write a topic sentence explaining how exercise can improve a person's life.",
+      words:[
+        "regular exercise",
+        "physical fitness",
+        "energy",
+        "reduce stress",
+        "healthy lifestyle",
+        "strong body",
+        "mental health",
+        "daily activity"
+      ]
+    },
 
-      "Write a topic sentence about the importance of getting enough sleep.",
+    {
+      prompt:"Write a topic sentence about the importance of getting enough sleep.",
+      words:[
+        "adequate sleep",
+        "concentration",
+        "memory",
+        "physical health",
+        "mental health",
+        "energy",
+        "rest",
+        "students"
+      ]
+    },
 
-      "Write a topic sentence about how food choices affect our health.",
+    {
+      prompt:"Write a topic sentence about how food choices affect our health.",
+      words:[
+        "balanced diet",
+        "nutritious food",
+        "healthy choices",
+        "vitamins",
+        "energy",
+        "prevent illness",
+        "eating habits",
+        "well-being"
+      ]
+    },
 
-      "Write a topic sentence about why mental and physical health are connected."
+    {
+      prompt:"Write a topic sentence about why mental and physical health are connected.",
+      words:[
+        "mental health",
+        "physical health",
+        "well-being",
+        "stress",
+        "healthy lifestyle",
+        "emotional health",
+        "exercise",
+        "balance"
+      ]
+    }
 
-    ],
-
-    words: [
-
-      "healthy habits",
-      "physical health",
-      "mental health",
-      "regular exercise",
-      "balanced diet",
-      "sleep",
-      "well-being",
-      "prevent illness",
-      "daily routine",
-      "healthy choices"
-
-    ]
-
-  },
-
-
-  nature: {
-
-    prompts: [
-
-      "Write a topic sentence about why protecting nature is important.",
-
-      "Write a topic sentence explaining why forests are valuable.",
-
-      "Write a topic sentence about how pollution affects the natural world.",
-
-      "Write a topic sentence about why people should spend time in nature.",
-
-      "Write a topic sentence about how humans can protect wildlife."
-
-    ],
-
-    words: [
-
-      "protect nature",
-      "natural environment",
-      "wildlife",
-      "forests",
-      "pollution",
-      "biodiversity",
-      "natural resources",
-      "climate",
-      "ecosystem",
-      "future generations"
-
-    ]
-
-  },
+  ],
 
 
-  technology: {
+  nature: [
 
-    prompts: [
+    {
+      prompt:"Write a topic sentence about why protecting nature is important.",
+      words:[
+        "protect nature",
+        "environment",
+        "future generations",
+        "natural resources",
+        "wildlife",
+        "ecosystem",
+        "responsibility",
+        "conservation"
+      ]
+    },
 
-      "Write a topic sentence about how technology has changed education.",
+    {
+      prompt:"Write a topic sentence explaining why forests are valuable.",
+      words:[
+        "forests",
+        "oxygen",
+        "wildlife",
+        "natural resources",
+        "climate",
+        "ecosystem",
+        "biodiversity",
+        "environment"
+      ]
+    },
 
-      "Write a topic sentence explaining why science is important in modern life.",
+    {
+      prompt:"Write a topic sentence about how pollution affects the natural world.",
+      words:[
+        "pollution",
+        "environment",
+        "air pollution",
+        "water pollution",
+        "wildlife",
+        "ecosystem",
+        "harmful",
+        "human activity"
+      ]
+    },
 
-      "Write a topic sentence about the benefits of using technology responsibly.",
+    {
+      prompt:"Write a topic sentence about why people should spend time in nature.",
+      words:[
+        "nature",
+        "mental health",
+        "reduce stress",
+        "fresh air",
+        "well-being",
+        "outdoor activities",
+        "relaxation",
+        "healthy lifestyle"
+      ]
+    },
 
-      "Write a topic sentence about how smartphones affect students.",
+    {
+      prompt:"Write a topic sentence about how humans can protect wildlife.",
+      words:[
+        "protect wildlife",
+        "endangered species",
+        "conservation",
+        "natural habitats",
+        "biodiversity",
+        "responsibility",
+        "environment",
+        "future generations"
+      ]
+    }
 
-      "Write a topic sentence about how scientific discoveries can improve society."
+  ],
 
-    ],
 
-    words: [
+  technology: [
 
-      "technology",
-      "scientific discoveries",
-      "digital tools",
-      "education",
-      "innovation",
-      "research",
-      "communication",
-      "responsibly",
-      "modern society",
-      "solve problems"
+    {
+      prompt:"Write a topic sentence about how technology has changed education.",
+      words:[
+        "technology",
+        "education",
+        "digital tools",
+        "online learning",
+        "communication",
+        "information",
+        "students",
+        "modern classroom"
+      ]
+    },
 
-    ]
+    {
+      prompt:"Write a topic sentence explaining why science is important in modern life.",
+      words:[
+        "science",
+        "scientific research",
+        "discoveries",
+        "modern society",
+        "innovation",
+        "medicine",
+        "technology",
+        "solve problems"
+      ]
+    },
 
-  }
+    {
+      prompt:"Write a topic sentence about the benefits of using technology responsibly.",
+      words:[
+        "technology",
+        "responsibly",
+        "digital tools",
+        "communication",
+        "education",
+        "information",
+        "online safety",
+        "benefits"
+      ]
+    },
+
+    {
+      prompt:"Write a topic sentence about how smartphones affect students.",
+      words:[
+        "smartphones",
+        "students",
+        "communication",
+        "education",
+        "concentration",
+        "distraction",
+        "digital technology",
+        "responsible use"
+      ]
+    },
+
+    {
+      prompt:"Write a topic sentence about how scientific discoveries can improve society.",
+      words:[
+        "scientific discoveries",
+        "research",
+        "innovation",
+        "medicine",
+        "technology",
+        "modern society",
+        "solve problems",
+        "quality of life"
+      ]
+    }
+
+  ]
 
 };
 
 
-let topic = "health";
+/* ============================================================
+   STATE
+============================================================ */
 
-let n = 0;
+let topic="health";
+let exerciseIndex=0;
 
-let stats = {
-  completed: 0,
-  strong: 0,
-  needs: 0,
-  best: 0
+let records={};
+
+let stats={
+  completed:0,
+  strong:0,
+  needs:0,
+  best:0
 };
 
+
+/* ============================================================
+   BASIC FUNCTIONS
+============================================================ */
 
 const $ = id => document.getElementById(id);
 
 
-function render(){
+function getExercise(){
 
-  const d = sets[topic];
-
-  $("progress").textContent =
-    `Practice ${n + 1} / 15`;
-
-  $("prompt").textContent =
-    d.prompts[n % 5];
-
-  $("vocab").innerHTML =
-    d.words
-      .map(word => `<button type="button">${word}</button>`)
-      .join("");
-
-  $("answer").value = "";
-
-  $("feedback").hidden = true;
-
-  $("next").disabled = true;
-
-
-  document
-    .querySelectorAll(".topic")
-    .forEach(button => {
-
-      button.classList.toggle(
-        "active",
-        button.dataset.topic === topic
-      );
-
-    });
-
-
-  document
-    .querySelectorAll(".vocab button")
-    .forEach(button => {
-
-      button.addEventListener(
-        "click",
-        () => {
-
-          const answer = $("answer");
-
-          answer.value +=
-            (
-              answer.value &&
-              !/\s$/.test(answer.value)
-                ? " "
-                : ""
-            ) +
-            button.textContent;
-
-          answer.focus();
-
-        }
-      );
-
-    });
+  return exercises[topic][exerciseIndex];
 
 }
 
 
-function esc(s){
+function getKey(){
 
-  return s.replace(
-    /[&<>"]/g,
-    c => ({
+  return topic+"-"+exerciseIndex;
+
+}
+
+
+function escapeHTML(text){
+
+  return text.replace(
+    /[&<>"']/g,
+    character => ({
       "&":"&amp;",
       "<":"&lt;",
       ">":"&gt;",
-      '"':"&quot;"
-    }[c])
+      '"':"&quot;",
+      "'":"&#039;"
+    })[character]
   );
 
 }
 
 
-function analyze(t){
+/* ============================================================
+   RENDER CURRENT EXERCISE
+============================================================ */
 
-  const issues = [];
+function render(){
 
-  const x = t.trim();
+  const exercise=getExercise();
 
-  const words =
-    x ? x.split(/\s+/) : [];
+  const overallIndex =
+    topic==="health"
+      ? exerciseIndex
+      : topic==="nature"
+        ? 5+exerciseIndex
+        : 10+exerciseIndex;
+
+  $("progress").textContent =
+    "Practice "+(overallIndex+1)+" / 15";
+
+  $("prompt").textContent =
+    exercise.prompt;
+
+  $("vocabulary").innerHTML =
+    exercise.words.map(word =>
+      `<button type="button">${word}</button>`
+    ).join("");
+
+  $("answer").value="";
+
+  $("feedback").hidden=true;
+
+  $("next").disabled=true;
 
 
-  if(!x){
+  document
+    .querySelectorAll(".topic")
+    .forEach(button=>{
+      button.classList.toggle(
+        "active",
+        button.dataset.topic===topic
+      );
+    });
+
+
+  document
+    .querySelectorAll(".vocabulary button")
+    .forEach(button=>{
+
+      button.addEventListener(
+        "click",
+        ()=>{
+
+          const box=$("answer");
+
+          box.value +=
+            (
+              box.value &&
+              !/\s$/.test(box.value)
+                ? " "
+                : ""
+            )+
+            button.textContent;
+
+          box.focus();
+
+        }
+      );
+
+    });
+
+}
+
+
+/* ============================================================
+   CORRECTIONS
+============================================================ */
+
+const spellingCorrections={
+
+  enviroment:"environment",
+  healty:"healthy",
+  tecnology:"technology",
+  scince:"science",
+  polluation:"pollution",
+  excersise:"exercise",
+  importent:"important",
+  benifits:"benefits",
+  socety:"society",
+  responcibly:"responsibly",
+  studing:"studying"
+
+};
+
+
+const weakWords={
+
+  good:"beneficial",
+  bad:"harmful",
+  nice:"valuable",
+  thing:"factor",
+  things:"factors",
+  stuff:"materials",
+  very:"highly",
+  really:"particularly",
+  big:"significant",
+  "a lot":"many"
+
+};
+
+
+function correctSentence(text){
+
+  let corrected=text.trim();
+
+
+  Object.keys(spellingCorrections)
+    .forEach(word=>{
+
+      corrected=corrected.replace(
+        new RegExp(
+          "\\b"+word+"\\b",
+          "gi"
+        ),
+        spellingCorrections[word]
+      );
+
+    });
+
+
+  Object.keys(weakWords)
+    .forEach(word=>{
+
+      corrected=corrected.replace(
+        new RegExp(
+          "\\b"+
+          word.replace(" ","\\s+")+
+          "\\b",
+          "gi"
+        ),
+        weakWords[word]
+      );
+
+    });
+
+
+  corrected=corrected.replace(
+    /\b(I|he|she|it)\s+are\b/gi,
+    "$1 is"
+  );
+
+
+  corrected=corrected.replace(
+    /\b(they|we|people|students)\s+is\b/gi,
+    "$1 are"
+  );
+
+
+  corrected=corrected.replace(
+    /\b(he|she|it)\s+have\b/gi,
+    "$1 has"
+  );
+
+
+  corrected=corrected.replace(
+    /\b(people|students|children)\s+has\b/gi,
+    "$1 have"
+  );
+
+
+  /* Capitalization */
+
+  corrected=corrected.replace(
+    /^([a-z])/,
+    match=>match.toUpperCase()
+  );
+
+
+  /* Punctuation spacing */
+
+  corrected=corrected.replace(
+    /\s+([,.!?])/g,
+    "$1"
+  );
+
+
+  /* Final punctuation */
+
+  if(
+    corrected &&
+    !/[.!?]$/.test(corrected)
+  ){
+
+    corrected+=".";
+
+  }
+
+
+  return corrected;
+
+}
+
+
+/* ============================================================
+   ANALYSIS
+============================================================ */
+
+function analyze(text){
+
+  const issues=[];
+
+  const clean=text.trim();
+
+  if(!clean){
 
     return {
-
       score:0,
-
-      issues:[
-        {
-          kind:"grammar",
-          msg:"Write a sentence before checking it."
-        }
-      ]
-
+      issues:[{
+        type:"general",
+        message:
+          "Please write one topic sentence before checking your work."
+      }]
     };
 
   }
 
 
-  if(words.length < 8){
+  const words=clean.split(/\s+/);
+
+
+  /* CAPITALIZATION */
+
+  if(/^[a-z]/.test(clean)){
 
     issues.push({
 
-      kind:"grammar",
+      type:"capitalization",
 
-      msg:
-        "Your sentence is very short. Add a clear topic and main idea; about 8–20 words is a useful B1 target."
+      word:clean.charAt(0),
+
+      message:
+        "Your sentence begins with a lowercase letter. Begin every sentence with a capital letter."
 
     });
 
   }
 
 
-  if(!/[.!?]$/.test(x)){
+  /* PUNCTUATION */
+
+  if(!/[.!?]$/.test(clean)){
 
     issues.push({
 
-      kind:"punctuation",
+      type:"punctuation",
 
-      msg:
-        "Add punctuation at the end of the sentence."
+      message:
+        "Your sentence needs punctuation at the end. Use a period for a statement or a question mark for a question."
 
     });
 
   }
 
 
-  if(/\s+[,.!?]/.test(x)){
+  if(/\s+[,.!?]/.test(clean)){
 
     issues.push({
 
-      kind:"punctuation",
+      type:"punctuation",
 
-      msg:
-        "Remove the space before the punctuation mark."
+      message:
+        "There is a space before your punctuation mark. In English, the punctuation mark should touch the word before it."
 
     });
 
   }
 
 
-  if(/\b(i|he|she|it)\s+are\b/i.test(x)){
+  /* SUBJECT VERB AGREEMENT */
+
+  if(/\b(he|she|it)\s+are\b/i.test(clean)){
 
     issues.push({
 
-      kind:"agreement",
+      type:"agreement",
 
-      msg:
-        "Subject–verb agreement: use “is” with he, she, and it."
+      word:"are",
+
+      message:
+        "The subject is singular, so use “is” rather than “are.”"
 
     });
 
   }
 
 
-  if(/\b(they|we|people|students)\s+is\b/i.test(x)){
+  if(/\b(people|students|children|they|we)\s+is\b/i.test(clean)){
 
     issues.push({
 
-      kind:"agreement",
+      type:"agreement",
 
-      msg:
-        "Subject–verb agreement: plural subjects normally take “are”."
+      word:"is",
+
+      message:
+        "The subject is plural, so use “are” rather than “is.”"
 
     });
 
   }
 
 
-  if(/\b(he|she|it)\s+have\b/i.test(x)){
+  if(/\b(he|she|it)\s+have\b/i.test(clean)){
 
     issues.push({
 
-      kind:"agreement",
+      type:"agreement",
 
-      msg:
-        "Subject–verb agreement: use “has” with he, she, and it."
+      word:"have",
+
+      message:
+        "Use “has” with a singular subject such as he, she, or it."
 
     });
 
   }
 
 
-  if(/\b(people|students|children)\s+has\b/i.test(x)){
+  if(/\b(people|students|children|they|we)\s+has\b/i.test(clean)){
 
     issues.push({
 
-      kind:"agreement",
+      type:"agreement",
 
-      msg:
-        "Plural subjects normally take “have”, not “has”."
+      word:"has",
+
+      message:
+        "Use “have” with a plural subject such as students, people, they, or we."
 
     });
 
   }
 
 
-  const fixes = {
+  /* SPELLING */
 
-    enviroment:"environment",
+  Object.keys(spellingCorrections)
+    .forEach(word=>{
 
-    healty:"healthy",
+      if(
+        new RegExp(
+          "\\b"+word+"\\b",
+          "i"
+        ).test(clean)
+      ){
 
-    tecnology:"technology",
+        issues.push({
 
-    scince:"science",
+          type:"spelling",
 
-    polluation:"pollution",
+          word:word,
 
-    excersise:"exercise",
+          message:
+            `The spelling “${word}” is incorrect. The correct spelling is “${spellingCorrections[word]}.”`
 
-    importent:"important",
+        });
 
-    benifits:"benefits",
+      }
 
-    socety:"society",
-
-    responcibly:"responsibly"
-
-  };
-
-
-  Object.keys(fixes).forEach(word => {
-
-    if(
-      new RegExp(
-        "\\b" + word + "\\b",
-        "i"
-      ).test(x)
-    ){
-
-      issues.push({
-
-        kind:"spelling",
-
-        word:word,
-
-        msg:
-          `Spelling: “${word}” should be “${fixes[word]}”.`
-
-      });
-
-    }
-
-  });
+    });
 
 
-  [
+  /* WORD CHOICE */
 
-    "good",
-    "bad",
-    "nice",
-    "thing",
-    "things",
-    "stuff",
-    "very",
-    "really",
-    "big",
-    "a lot"
+  Object.keys(weakWords)
+    .forEach(word=>{
 
-  ].forEach(word => {
+      if(
+        new RegExp(
+          "\\b"+
+          word.replace(" ","\\s+")+
+          "\\b",
+          "i"
+        ).test(clean)
+      ){
 
-    if(
-      new RegExp(
-        "\\b" +
-        word.replace(" ","\\s+") +
-        "\\b",
-        "i"
-      ).test(x)
-    ){
+        issues.push({
 
-      issues.push({
+          type:"word",
 
-        kind:"word",
+          word:word,
 
-        word:word,
+          message:
+            `“${word}” is understandable, but it is a general word. For academic writing, “${weakWords[word]}” is more precise.`
 
-        msg:
-          `“${word}” is a general word. Choose a more precise academic word from the vocabulary bank.`
+        });
 
-      });
+      }
 
-    }
-
-  });
+    });
 
 
-  const strategy =
-    $("strategy").value;
+  /* SENTENCE LENGTH */
+
+  if(words.length<8){
+
+    issues.push({
+
+      type:"grammar",
+
+      message:
+        "Your topic sentence is quite short. Try to include both the topic and the main idea you want your paragraph to discuss."
+
+    });
+
+  }
+
+
+  /* STRATEGY */
+
+  const strategy=$("strategy").value;
 
 
   if(
-    strategy === "question" &&
-    !/\?$/.test(x)
+    strategy==="question" &&
+    !/\?$/.test(clean)
   ){
 
     issues.push({
 
-      kind:"structure",
+      type:"structure",
 
-      msg:
-        "You chose Question. End the sentence with a question mark."
-
-    });
-
-  }
-
-
-  if(
-    strategy === "quote" &&
-    !/[“"]/.test(x)
-  ){
-
-    issues.push({
-
-      kind:"structure",
-
-      msg:
-        "You chose Quote. Try starting with a short quotation and connect it to your topic."
+      message:
+        "You selected Question. Your topic sentence should be written as a question and should end with a question mark."
 
     });
 
@@ -1014,16 +1495,16 @@ function analyze(t){
 
 
   if(
-    strategy === "statement" &&
-    /\?$/.test(x)
+    strategy==="quote" &&
+    !/[“"]/.test(clean)
   ){
 
     issues.push({
 
-      kind:"structure",
+      type:"structure",
 
-      msg:
-        "You chose Declarative statement. Write a statement rather than a question."
+      message:
+        "You selected Quote. Try beginning with a short quotation and then connect the quotation to your essay topic."
 
     });
 
@@ -1031,37 +1512,38 @@ function analyze(t){
 
 
   if(
-    strategy === "story" &&
-    !/\b(one day|when i|last year|last week|once|yesterday|a few years ago)\b/i.test(x)
+    strategy==="statement" &&
+    /\?$/.test(clean)
   ){
 
     issues.push({
 
-      kind:"structure",
+      type:"structure",
 
-      msg:
-        "For a story/anecdote opening, begin with a small moment or experience and connect it to the topic."
+      message:
+        "You selected Declarative Statement. A declarative sentence makes a statement rather than asking a question."
 
     });
 
   }
 
 
-  const score =
-    Math.max(
-      0,
-      Math.min(
-        10,
-        10 -
-        issues.length * 2 +
-        (
-          words.length >= 8 &&
-          words.length <= 25
-            ? 1
-            : 0
-        )
-      )
-    );
+  let score=
+    10-(issues.length*2);
+
+  if(
+    words.length>=8 &&
+    words.length<=25
+  ){
+
+    score++;
+
+  }
+
+  score=Math.max(
+    0,
+    Math.min(10,score)
+  );
 
 
   return {
@@ -1072,195 +1554,640 @@ function analyze(t){
 }
 
 
-function feedback(text,r){
+/* ============================================================
+   TEACHER-STYLE AI-LIKE FEEDBACK
+============================================================ */
 
-  let marked = esc(text);
+function teacherFeedback(text,result){
 
-
-  r.issues
-
-    .filter(
-      issue =>
-        issue.word &&
-        issue.kind === "spelling"
-    )
-
-    .forEach(issue => {
-
-      marked =
-        marked.replace(
-
-          new RegExp(
-            "\\b" +
-            issue.word +
-            "\\b",
-            "gi"
-          ),
-
-          match =>
-            `<span class="red">${match}</span>`
-
-        );
-
-    });
+  const issues=result.issues;
 
 
-  r.issues
+  if(!issues.length){
 
-    .filter(
-      issue =>
-        issue.word &&
-        issue.kind === "word"
-    )
-
-    .forEach(issue => {
-
-      marked =
-        marked.replace(
-
-          new RegExp(
-            "\\b" +
-            issue.word.replace(
-              " ",
-              "\\s+"
-            ) +
-            "\\b",
-            "gi"
-          ),
-
-          match =>
-            `<span class="blue">${match}</span>`
-
-        );
-
-    });
-
-
-  $("marked").innerHTML =
-    marked;
-
-
-  $("messages").innerHTML =
-    r.issues.length
-
-      ?
-
-        r.issues
-
-          .map(
-            issue =>
-              `<div class="item">
-                <strong>
-                  ${
-                    issue.kind === "word"
-                      ? "Word choice"
-                      : "Check"
-                  }:
-                </strong>
-                ${issue.msg}
-              </div>`
-          )
-
-          .join("")
-
-      :
-
-        `<div class="good">
-          <strong>Excellent!</strong>
-          No obvious problems were found in this quick B1 check.
-          Make sure your sentence clearly introduces the paragraph topic.
-        </div>`;
-
-
-  $("feedback").hidden = false;
-
-  $("next").disabled = false;
-
-
-  stats.completed++;
-
-
-  if(r.score >= 8){
-
-    stats.strong++;
-
-  }else{
-
-    stats.needs++;
+    return `
+      <strong>Excellent work!</strong>
+      Your topic sentence is clear and grammatically strong.
+      You have introduced a main idea that could be developed
+      in the paragraph that follows. Keep using specific vocabulary
+      and make sure your supporting sentences explain the idea
+      introduced here.
+    `;
 
   }
 
 
-  stats.best =
-    Math.max(
-      stats.best,
-      r.score
-    );
+  let feedback="";
 
 
-  $("completed").textContent =
-    stats.completed;
+  if(result.score>=7){
 
-  $("strong").textContent =
-    stats.strong;
+    feedback=
+      "You have a good starting sentence, and your main idea is understandable. ";
 
-  $("needs").textContent =
-    stats.needs;
+  }else{
 
-  $("best").textContent =
-    stats.best + "/10";
+    feedback=
+      "You have a useful idea, but your topic sentence needs some revision before it is ready for your essay. ";
+
+  }
+
+
+  if(
+    issues.some(i=>i.type==="capitalization")
+  ){
+
+    feedback+=
+      "<strong>First, work on capitalization.</strong> " +
+      "Your sentence begins with a lowercase letter. " +
+      "Remember that every English sentence begins with a capital letter. ";
+
+  }
+
+
+  if(
+    issues.some(i=>i.type==="punctuation")
+  ){
+
+    feedback+=
+      "<strong>Next, check your punctuation.</strong> " +
+      "A complete sentence needs appropriate punctuation at the end. " +
+      "Remember that a statement normally ends with a period, while a question ends with a question mark. ";
+
+  }
+
+
+  if(
+    issues.some(i=>i.type==="agreement")
+  ){
+
+    feedback+=
+      "<strong>Now look carefully at subject–verb agreement.</strong> " +
+      "Find the subject first and decide whether it is singular or plural. " +
+      "Then choose the verb that agrees with the subject. ";
+
+  }
+
+
+  if(
+    issues.some(i=>i.type==="spelling")
+  ){
+
+    feedback+=
+      "<strong>There is also a spelling problem.</strong> " +
+      "Look at the red-marked word and compare it with the corrected version. " +
+      "Try to remember the correct spelling when you write your next sentence. ";
+
+  }
+
+
+  if(
+    issues.some(i=>i.type==="word")
+  ){
+
+    feedback+=
+      "<strong>Your word choice can be stronger.</strong> " +
+      "The blue-marked word is understandable, but it is too general for academic writing. " +
+      "Try replacing it with the more precise vocabulary suggested in the feedback. ";
+
+  }
+
+
+  if(
+    issues.some(i=>i.type==="structure")
+  ){
+
+    feedback+=
+      "<strong>Finally, check your chosen opening strategy.</strong> " +
+      "Your sentence should follow the pattern you selected: quote, question, declarative statement, hook, or short story. ";
+
+  }
+
+
+  if(
+    issues.some(i=>i.type==="grammar")
+  ){
+
+    feedback+=
+      "<strong>Your sentence also needs a little more development.</strong> " +
+      "Try to tell the reader both what the topic is and what you want to say about it. " +
+      "Remember that you only need one topic sentence, not the entire paragraph. ";
+
+  }
+
+
+  feedback+=
+    "<strong>Now compare your original sentence with the corrected version below.</strong> " +
+    "Try writing the sentence again in your own words and apply the corrections you have learned.";
+
+  return feedback;
 
 }
 
 
+/* ============================================================
+   VISUAL ANNOTATION
+============================================================ */
+
+function annotate(text,result){
+
+  let output=escapeHTML(text);
+
+
+  /* Weak words = BLUE */
+
+  result.issues
+    .filter(i=>i.type==="word" && i.word)
+    .forEach(issue=>{
+
+      output=output.replace(
+        new RegExp(
+          "\\b"+
+          issue.word.replace(" ","\\s+")+
+          "\\b",
+          "gi"
+        ),
+        match =>
+          `<span class="blue">${match}</span>`
+      );
+
+    });
+
+
+  /* Spelling = RED UNDERLINE */
+
+  result.issues
+    .filter(i=>i.type==="spelling" && i.word)
+    .forEach(issue=>{
+
+      output=output.replace(
+        new RegExp(
+          "\\b"+
+          issue.word+
+          "\\b",
+          "gi"
+        ),
+        match =>
+          `<span class="red">${match}</span>`
+      );
+
+    });
+
+
+  /* Agreement = RED BOX */
+
+  result.issues
+    .filter(i=>i.type==="agreement" && i.word)
+    .forEach(issue=>{
+
+      output=output.replace(
+        new RegExp(
+          "\\b"+
+          issue.word+
+          "\\b",
+          "gi"
+        ),
+        match =>
+          `<span class="square">${match}</span>`
+      );
+
+    });
+
+
+  /* Capitalization = CIRCLE FIRST LETTER */
+
+  if(
+    result.issues.some(
+      i=>i.type==="capitalization"
+    )
+  ){
+
+    output=
+      `<span class="circle">${output.charAt(0)}</span>`+
+      output.substring(1);
+
+  }
+
+
+  return output;
+
+}
+
+
+/* ============================================================
+   COMPLETED WORK
+============================================================ */
+
+function saveRecord(text,result){
+
+  const key=getKey();
+
+  const now=new Date();
+
+  if(!records[key]){
+
+    records[key]={
+      attempts:0,
+      firstCompleted:now.toISOString()
+    };
+
+  }
+
+
+  records[key].attempts++;
+
+  records[key].lastCompleted=
+    now.toISOString();
+
+  records[key].original=text;
+
+  records[key].corrected=
+    correctSentence(text);
+
+  records[key].score=
+    result.score;
+
+  records[key].issues=
+    result.issues.map(
+      issue=>issue.message
+    );
+
+  records[key].annotation=
+    annotate(text,result);
+
+
+  renderRecords();
+
+}
+
+
+function formatDate(date){
+
+  return new Intl.DateTimeFormat(
+    "en-GB",
+    {
+      day:"2-digit",
+      month:"short",
+      year:"numeric",
+      hour:"2-digit",
+      minute:"2-digit",
+      hour12:false
+    }
+  ).format(new Date(date));
+
+}
+
+
+function renderRecords(){
+
+  const keys=Object.keys(records);
+
+  $("completedCount").textContent=
+    keys.length+" completed";
+
+
+  if(!keys.length){
+
+    $("completedWork").innerHTML=`
+      <div class="empty">
+        Complete your first exercise to create your writing record.
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+  $("completedWork").innerHTML=
+
+    keys.map(key=>{
+
+      const record=records[key];
+
+      const parts=key.split("-");
+
+      const recordTopic=parts[0];
+
+      const number=
+        parseInt(parts[1])+1;
+
+      const topicName=
+        recordTopic==="health"
+          ? "Health"
+          : recordTopic==="nature"
+            ? "Nature"
+            : "Science & Technology";
+
+
+      const feedback=
+
+        record.issues.length
+
+          ?
+
+            `<ul>
+              ${
+                record.issues
+                  .map(
+                    message =>
+                      `<li>${escapeHTML(message)}</li>`
+                  )
+                  .join("")
+              }
+            </ul>`
+
+          :
+
+            `<p>
+              Excellent. No obvious errors were detected.
+              Continue developing clear ideas and precise vocabulary.
+            </p>`;
+
+
+      return `
+
+        <div class="work-entry">
+
+          <div class="work-header">
+
+            <div class="work-title">
+              Topic Sentence ${number}
+              — ${topicName}
+            </div>
+
+            <div class="score">
+              ${record.score}/10
+            </div>
+
+          </div>
+
+
+          <div class="work-body">
+
+            <div class="meta">
+
+              <span>
+                First completed:
+                ${formatDate(record.firstCompleted)}
+              </span>
+
+              <span>
+                Last attempted:
+                ${formatDate(record.lastCompleted)}
+              </span>
+
+              <span>
+                Attempts:
+                ${record.attempts}
+              </span>
+
+            </div>
+
+
+            <div class="section-label">
+              Student's Original Work
+            </div>
+
+            <div class="original">
+              ${record.annotation}
+            </div>
+
+
+            <div style="margin-top:15px">
+
+              <div class="section-label">
+                Corrected Work
+              </div>
+
+              <div class="corrected">
+                ${escapeHTML(record.corrected)}
+              </div>
+
+            </div>
+
+
+            <div class="teacher-record">
+
+              <div class="section-label">
+                Teacher Feedback
+              </div>
+
+              ${feedback}
+
+            </div>
+
+          </div>
+
+        </div>
+
+      `;
+
+    }).join("");
+
+}
+
+
+/* ============================================================
+   CHECK BUTTON
+============================================================ */
+
 $("check").addEventListener(
   "click",
-  () =>
-    feedback(
-      $("answer").value,
-      analyze($("answer").value)
-    )
-);
+  ()=>{
+
+    const text=
+      $("answer").value.trim();
 
 
-$("next").addEventListener(
-  "click",
-  () => {
+    if(!text){
 
-    n = (n + 1) % 15;
+      alert(
+        "Please write one topic sentence first."
+      );
 
-    topic =
-      n < 5
-        ? "health"
-        : n < 10
-          ? "nature"
-          : "technology";
+      return;
 
-    render();
+    }
+
+
+    const result=
+      analyze(text);
+
+
+    $("teacherFeedback").innerHTML=
+      teacherFeedback(
+        text,
+        result
+      );
+
+
+    $("marked").innerHTML=
+      annotate(
+        text,
+        result
+      );
+
+
+    $("corrected").textContent=
+      correctSentence(text);
+
+
+    $("feedbackItems").innerHTML=
+
+      result.issues.length
+
+        ?
+
+          result.issues
+            .map(issue=>`
+
+              <div class="feedback-item">
+
+                <strong>
+                  ${
+                    issue.type==="capitalization"
+                      ? "Capitalization"
+                      : issue.type==="punctuation"
+                        ? "Punctuation"
+                        : issue.type==="agreement"
+                          ? "Subject–Verb Agreement"
+                          : issue.type==="spelling"
+                            ? "Spelling"
+                            : issue.type==="word"
+                              ? "Word Choice"
+                              : "Writing"
+                  }:
+                </strong>
+
+                ${issue.message}
+
+              </div>
+
+            `)
+            .join("")
+
+        :
+
+          `<div class="feedback-item">
+            Your sentence is grammatically strong.
+            Continue developing precise vocabulary and clear ideas.
+          </div>`;
+
+
+    $("feedback").hidden=false;
+
+    $("next").disabled=false;
+
+
+    stats.completed++;
+
+
+    if(result.score>=8){
+
+      stats.strong++;
+
+    }else{
+
+      stats.needs++;
+
+    }
+
+
+    stats.best=
+      Math.max(
+        stats.best,
+        result.score
+      );
+
+
+    $("completed").textContent=
+      stats.completed;
+
+    $("strong").textContent=
+      stats.strong;
+
+    $("needs").textContent=
+      stats.needs;
+
+    $("best").textContent=
+      stats.best+"/10";
+
+
+    saveRecord(
+      text,
+      result
+    );
 
   }
 );
 
 
+/* ============================================================
+   NEXT EXERCISE
+============================================================ */
+
+$("next").addEventListener(
+  "click",
+  ()=>{
+
+    exerciseIndex++;
+
+    if(exerciseIndex>=5){
+
+      if(topic==="health"){
+
+        topic="nature";
+        exerciseIndex=0;
+
+      }else if(topic==="nature"){
+
+        topic="technology";
+        exerciseIndex=0;
+
+      }else{
+
+        topic="health";
+        exerciseIndex=0;
+
+      }
+
+    }
+
+    render();
+
+    window.scrollTo({
+      top:0,
+      behavior:"smooth"
+    });
+
+  }
+);
+
+
+/* ============================================================
+   TOPIC BUTTONS
+============================================================ */
+
 document
   .querySelectorAll(".topic")
-  .forEach(button => {
+  .forEach(button=>{
 
     button.addEventListener(
       "click",
-      () => {
+      ()=>{
 
-        topic =
+        topic=
           button.dataset.topic;
 
-        n =
-          topic === "health"
-            ? 0
-            : topic === "nature"
-              ? 5
-              : 10;
+        exerciseIndex=0;
 
         render();
+
+        window.scrollTo({
+          top:0,
+          behavior:"smooth"
+        });
 
       }
     );
@@ -1268,21 +2195,31 @@ document
   });
 
 
+/* ============================================================
+   CLEAR
+============================================================ */
+
 $("clear").addEventListener(
   "click",
-  () => {
+  ()=>{
 
-    $("answer").value = "";
+    $("answer").value="";
 
-    $("feedback").hidden = true;
+    $("feedback").hidden=true;
 
-    $("next").disabled = true;
+    $("next").disabled=true;
 
   }
 );
 
 
+/* ============================================================
+   START
+============================================================ */
+
 render();
+
+renderRecords();
 
 </script>
 
