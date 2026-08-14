@@ -1240,8 +1240,14 @@ textarea:focus{
 const SUPABASE_URL =
   "https://ekleolcjjpgsvlqyivyy.supabase.co";
 
+/*
+  PASTE YOUR NEW PUBLISHABLE KEY BELOW.
+  Do NOT include the quotation marks around the key.
+*/
+
 const SUPABASE_PUBLISHABLE_KEY =
   "sb_publishable_SQLHDgrKcNU9ZGAiXSehVQ_6tuYcs18";
+
 
 const supabaseClient =
   supabase.createClient(
@@ -1261,6 +1267,7 @@ const KATE_NAME =
 
 const KATE_NUMBER = "24";
 
+
 let currentStudentID = "";
 
 let currentStudentName = "";
@@ -1274,6 +1281,7 @@ let topic = "health";
 let exerciseIndex = 0;
 
 let records = [];
+
 
 const $ =
   id => document.getElementById(id);
@@ -2172,6 +2180,12 @@ async function analyze(text){
   }
 
 
+  /*
+    Convert the AI Tutor's issue categories
+    into the format already used by the
+    annotation system.
+  */
+
   const issues =
     (data.issues || [])
       .map(
@@ -2340,7 +2354,6 @@ async function analyze(text){
 
 }
 
-
 function correctedSentence(text){
 
   let result = text.trim();
@@ -2367,16 +2380,19 @@ function correctedSentence(text){
 
   });
 
+  /* Remove spaces before punctuation */
   result = result.replace(
     /\s+([,.!?])/g,
     "$1"
   );
 
+  /* Capitalize the first letter */
   result = result.replace(
     /^([a-z])/,
     letter => letter.toUpperCase()
   );
 
+  /* Add final punctuation if missing */
   if (
     result &&
     !/[.!?]$/.test(result)
@@ -2637,7 +2653,6 @@ function showLearningPage(
   /* MODEL */
 
   $("modelSentence").textContent =
-    result.model_sentence ||
     exercise.model;
 
 
@@ -2649,12 +2664,7 @@ function showLearningPage(
 
       <br><br>
 
-      ${
-        escapeHTML(
-          result.model_topic ||
-          exercise.topicPart
-        )
-      }
+      ${exercise.topicPart}
 
     </div>
 
@@ -2665,12 +2675,7 @@ function showLearningPage(
 
       <br><br>
 
-      ${
-        escapeHTML(
-          result.model_main_idea ||
-          exercise.mainIdea
-        )
-      }
+      ${exercise.mainIdea}
 
     </div>
 
@@ -2681,13 +2686,7 @@ function showLearningPage(
 
       <br><br>
 
-      ${
-        escapeHTML(
-          (result.model_vocabulary || [])
-            .join(", ") ||
-          exercise.vocab
-        )
-      }
+      ${exercise.vocab}
 
     </div>
 
@@ -2759,25 +2758,45 @@ function showLearningPage(
 
   }
 
-
   /* NEXT STEP */
 
-  $("nextStep").innerHTML = `
+  if(result.score >= 8){
 
-    <p>
-      ${
-        escapeHTML(
-          result.next_step ||
-          (
-            result.score >= 8
-              ? "Your sentence is developing well. For your next attempt, make your main idea even more specific."
-              : "Rewrite your sentence by correcting the problems identified above and then compare it with the model sentence."
-          )
-        )
-      }
-    </p>
+    $("nextStep").innerHTML = `
 
-  `;
+      <p>
+        🌟 Your sentence is developing well.
+        For your next attempt, try using one
+        of the academic vocabulary words from
+        the lesson and make your main idea
+        even more specific.
+      </p>
+
+    `;
+
+  }
+  else{
+
+    $("nextStep").innerHTML = `
+
+      <p>
+        ✏️ Rewrite your sentence.
+        First correct the red-marked errors.
+        Then replace any blue-marked general
+        vocabulary with one of the academic
+        choices provided above.
+      </p>
+
+      <p>
+        ⭐ Use the model sentence as a guide.
+        Pay attention to how it introduces
+        the topic and clearly states the
+        main idea.
+      </p>
+
+    `;
+
+  }
 
 
   $("feedback")
@@ -2834,7 +2853,6 @@ async function saveSubmission(
           ),
 
         corrected_sentence:
-          result.corrected_sentence ||
           correctedSentence(text),
 
         teacher_feedback:
@@ -3179,72 +3197,58 @@ $("check").addEventListener(
       .remove("show");
 
 
-    try {
+    setTimeout(
+      async () => {
 
-      await updateSpelling(text);
+        await updateSpelling(text);
 
-      const result =
-        await analyze(text);
-
-
-      showLearningPage(
-        text,
-        result
-      );
+const result =
+  await analyze(text);
 
 
-      const attempts =
-        records.filter(
-          r =>
-            r.topic === topic &&
-            r.exercise_number ===
-              exerciseIndex + 1
-        ).length;
+        showLearningPage(
+          text,
+          result
+        );
 
 
-      await saveSubmission(
-        text,
-        result,
-        attempts + 1
-      );
+        const attempts =
+          records.filter(
+            r =>
+              r.topic === topic &&
+              r.exercise_number ===
+                exerciseIndex + 1
+          ).length;
 
 
-      await loadRecords();
+        await saveSubmission(
+          text,
+          result,
+          attempts + 1
+        );
 
 
-      $("next").disabled = false;
+        await loadRecords();
 
 
-      $("feedback")
-        .scrollIntoView({
-          behavior:"smooth"
-        });
+        $("analyzing")
+          .classList
+          .remove("show");
 
-    }
-    catch(error){
 
-      console.error(
-        "Analysis failed:",
-        error
-      );
+        $("next").disabled = false;
 
-      $("saveStatus").textContent =
-        "⚠️ The feedback could not be generated. Please try again.";
+        $("check").disabled = false;
 
-      $("saveStatus")
-        .className =
-        "save-status save-error";
 
-    }
-    finally{
+        $("feedback")
+          .scrollIntoView({
+            behavior:"smooth"
+          });
 
-      $("analyzing")
-        .classList
-        .remove("show");
-
-      $("check").disabled = false;
-
-    }
+      },
+      700
+    );
 
   }
 );
