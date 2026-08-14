@@ -2256,76 +2256,51 @@ function analyze(text){
 
 function correctedSentence(text){
 
-  let result =
-    text.trim();
+  let result = text.trim();
 
+  Object.keys(spelling).forEach(wrongWord => {
 
-  Object.keys(spelling)
-    .forEach(word => {
+    const correctWord = spelling[wrongWord];
 
-      result =
-        result.replace(
-          new RegExp(
-            "\\b"+word+"\\b",
-            "gi"
-          ),
-          spelling[word]
-        );
+    if (!correctWord) return;
 
-    });
+    const escapedWord =
+      wrongWord.replace(
+        /[.*+?^${}()|[\]\\]/g,
+        "\\$&"
+      );
 
-
-  result =
-    result.replace(
-      /\b(he|she|it)\s+are\b/gi,
-      "$1 is"
+    result = result.replace(
+      new RegExp(
+        "\\b" + escapedWord + "\\b",
+        "gi"
+      ),
+      correctWord
     );
 
+  });
 
-  result =
-    result.replace(
-      /\b(people|students|children|they|we)\s+is\b/gi,
-      "$1 are"
-    );
+  /* Remove spaces before punctuation */
+  result = result.replace(
+    /\s+([,.!?])/g,
+    "$1"
+  );
 
+  /* Capitalize the first letter */
+  result = result.replace(
+    /^([a-z])/,
+    letter => letter.toUpperCase()
+  );
 
-  result =
-    result.replace(
-      /\b(he|she|it)\s+have\b/gi,
-      "$1 has"
-    );
-
-
-  result =
-    result.replace(
-      /\b(people|students|children|they|we)\s+has\b/gi,
-      "$1 have"
-    );
-
-
-  result =
-    result.replace(
-      /\s+([,.!?])/g,
-      "$1"
-    );
-
-
-  result =
-    result.replace(
-      /^([a-z])/,
-      x => x.toUpperCase()
-    );
-
-
-  if(
+  /* Add final punctuation if missing */
+  if (
     result &&
     !/[.!?]$/.test(result)
-  )
+  ) {
     result += ".";
-
+  }
 
   return result;
-
 }
 
 
