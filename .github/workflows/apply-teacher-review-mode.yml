@@ -1,0 +1,24 @@
+name: Apply Teacher Review Mode
+on:
+  push:
+    branches:
+      - main
+permissions:
+  contents: write
+jobs:
+  update:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Apply conversion
+        run: python scripts/convert_to_teacher_review.py
+      - name: Commit conversion
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          rm -f scripts/convert_to_teacher_review.py .github/workflows/apply-teacher-review-mode.yml
+          git add index.html scripts/convert_to_teacher_review.py .github/workflows/apply-teacher-review-mode.yml
+          git commit -m "Switch student workbook to teacher review"
+          git push
