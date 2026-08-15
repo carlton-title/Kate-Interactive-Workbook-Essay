@@ -930,9 +930,8 @@ textarea:focus{
 
   <div class="learning-subtitle">
 
-    Your mistakes are turned into a short
-    writing lesson. Study this page before
-    writing your next sentence.
+    Your work will be reviewed personally by your teacher.
+    After your teacher reviews it, your seven-part learning page will appear here.
 
   </div>
 
@@ -2493,122 +2492,30 @@ function annotate(text,result){
    LEARNING PAGE
 ========================================================= */
 
-function showLearningPage(
-  text,
-  result
-){
+function showPendingSubmission(){
 
-  const exercise = exercises[topic][exerciseIndex];
-  const issues = Array.isArray(result.issues) ? result.issues : [];
-  const score = Number(result.score) || 0;
-
-  $("annotated").innerHTML = annotate(text,result);
-
-  /* 2. WHAT NEEDS ATTENTION */
-  if(!issues.length){
-    $("feedbackItems").innerHTML = score >= 8
-      ? `
-        <div style="padding:12px;background:#ecfdf5;border-left:4px solid #15803d;border-radius:8px;line-height:1.7">
-          <strong>🌟 No specific workbook error was detected.</strong>
-          <p style="margin:7px 0 0">The AI considers this sentence strong enough to continue developing. Read the feedback below and look for one way to make the idea even more precise.</p>
-        </div>
-      `
-      : `
-        <div style="padding:12px;background:#fff7ed;border-left:4px solid #ea580c;border-radius:8px;line-height:1.7">
-          <strong>🔎 The sentence still needs attention.</strong>
-          <p style="margin:7px 0 0">The rule checker did not identify a specific grammar, spelling, punctuation, or vocabulary error. <strong>This does not mean the sentence is correct.</strong> Use the AI feedback below to improve clarity, task connection, sentence structure, and vocabulary.</p>
-        </div>
-      `;
-  }
-  else{
-    $("feedbackItems").innerHTML = issues.map((issue,index) => {
-      const label = issue.category || issue.type || "Sentence Structure";
-      const original = issue.original || issue.word || "the marked part";
-      const correction = issue.correction || "See the corrected sentence below.";
-      const explanation = issue.explanation || issue.message || "This part needs revision.";
-      return `
-        <div class="feedback-item" style="margin-top:10px;padding:14px;background:white;border:1px solid #dbe4f2;border-left:5px solid ${issue.type === "word" ? "#2563eb" : "#dc2626"};border-radius:9px">
-          <strong>${index + 1}. ${escapeHTML(label)}</strong>
-          <div style="margin-top:9px;line-height:1.7"><strong>Problem:</strong> ${escapeHTML(original)}</div>
-          <div style="margin-top:7px;line-height:1.7"><strong>What to change:</strong> ${escapeHTML(correction)}</div>
-          <div style="margin-top:7px;line-height:1.7"><strong>Coach's advice:</strong> ${escapeHTML(explanation)}</div>
-        </div>
-      `;
-    }).join("") + `
-      <div style="margin-top:12px;padding:11px;background:#eff6ff;border-radius:8px;line-height:1.7">
-        <strong>🎯 Coaching goal:</strong> Correct these specific problems first. Then compare the corrected sentence with the original before writing your next sentence.
-      </div>
-    `;
-  }
-
-  /* 3. LEARN WHY */
-  let explanation = "";
-
-  if(result.overall_feedback){
-    explanation += `
-      <div style="padding:12px;background:#eff6ff;border-left:4px solid #2563eb;border-radius:8px;line-height:1.75">
-        <strong>Overall feedback</strong>
-        <div style="margin-top:6px">${escapeHTML(result.overall_feedback)}</div>
-      </div>
-    `;
-  }
-
-  if(issues.length){
-    explanation += `
-      <div style="margin-top:12px;overflow-x:auto">
-        <table style="width:100%;border-collapse:collapse;background:white">
-          <thead><tr>
-            <th style="padding:10px;border-bottom:2px solid #cbd8ee;text-align:left;color:#991b1b">Incorrect</th>
-            <th style="padding:10px;border-bottom:2px solid #cbd8ee;text-align:left;color:#166534">Correct</th>
-            <th style="padding:10px;border-bottom:2px solid #cbd8ee;text-align:left;color:#1e3a8a">Why?</th>
-          </tr></thead>
-          <tbody>
-            ${issues.map(issue => `
-              <tr>
-                <td style="padding:10px;border-bottom:1px solid #e2e8f0;vertical-align:top;color:#b91c1c;font-weight:bold">${escapeHTML(issue.original || issue.word || "")}</td>
-                <td style="padding:10px;border-bottom:1px solid #e2e8f0;vertical-align:top;color:#15803d;font-weight:bold">${escapeHTML(issue.correction || "See corrected sentence")}</td>
-                <td style="padding:10px;border-bottom:1px solid #e2e8f0;vertical-align:top;line-height:1.7">${escapeHTML(issue.explanation || issue.message || "")}</td>
-              </tr>
-            `).join("")}
-          </tbody>
-        </table>
-      </div>
-    `;
-  }
-  else{
-    explanation += `
-      <div style="margin-top:10px;padding:12px;background:#f8fafc;border-radius:8px;line-height:1.75">
-        <strong>Why this matters:</strong> No specific rule-based error was identified, so use the overall AI feedback to check clarity, sentence structure, task connection, and precise vocabulary.
-      </div>
-    `;
-  }
-
-  $("teacherText").innerHTML = explanation;
-
-  /* 4. CORRECT SENTENCE */
-  $("corrected").textContent = result.corrected_sentence || text;
-
-  /* 6. STRONG MODEL */
-  $("modelSentence").textContent = exercise.model;
-  $("modelBreakdown").innerHTML = `
-    <div class="breakdown"><strong>Topic</strong><br><br>${escapeHTML(exercise.topicPart)}</div>
-    <div class="breakdown"><strong>Main Idea</strong><br><br>${escapeHTML(exercise.mainIdea)}</div>
-    <div class="breakdown"><strong>Academic Vocabulary</strong><br><br>${escapeHTML(exercise.vocab)}</div>
+  $("feedbackItems").innerHTML = `
+    <div style="padding:14px;background:#eff6ff;border-left:5px solid #2563eb;border-radius:9px;line-height:1.8">
+      <strong>📨 Workbook successfully submitted.</strong>
+      <p style="margin:7px 0 0">Wait for your teacher to review your work. Your seven-part Student Writing Learning Page will appear here after your teacher completes the review.</p>
+    </div>
   `;
 
-  /* 7. NEXT STEP */
-  if(result.next_step){
-    $("nextStep").innerHTML = `<p style="line-height:1.75"><strong>🎯 Goal for your next sentence:</strong> ${escapeHTML(result.next_step)}</p>`;
-  }
-  else if(score >= 8){
-    $("nextStep").innerHTML = `<p style="line-height:1.75">🌟 Keep the same clear structure, but make the main idea more specific and use precise academic vocabulary.</p>`;
-  }
-  else{
-    $("nextStep").innerHTML = `<p style="line-height:1.75">✏️ Rewrite the sentence by correcting the problems above, then write one clear topic sentence that directly answers the task.</p>`;
-  }
+  $("teacherText").innerHTML = `
+    <div style="padding:14px;background:#f8fafc;border-radius:9px;line-height:1.8">
+      Your teacher will personally explain what needs attention and why.
+    </div>
+  `;
 
+  $("corrected").textContent = "Waiting for teacher review.";
+  $("modelSentence").textContent = "Your teacher will provide a strong topic sentence example after reviewing your work.";
+  $("modelBreakdown").innerHTML = `
+    <div class="breakdown"><strong>Topic</strong><br><br>Teacher review pending</div>
+    <div class="breakdown"><strong>Main Idea</strong><br><br>Teacher review pending</div>
+    <div class="breakdown"><strong>Academic Vocabulary</strong><br><br>Teacher review pending</div>
+  `;
+  $("nextStep").innerHTML = `<p style="line-height:1.75">🎯 Wait for your teacher's review. Your next writing goal will be provided personally.</p>`;
   $("feedback").classList.add("show");
-
 }
 
 
@@ -2740,23 +2647,23 @@ function updateStats(){
 
   $("strong").textContent =
     records.filter(
-      r => r.score >= 8
+      r => r.review_status === "reviewed" && r.score >= 8
     ).length;
 
 
   $("needs").textContent =
     records.filter(
-      r => r.score < 8
+      r => r.review_status === "reviewed" && r.score < 8
     ).length;
 
 
+  const reviewedScores = records
+    .filter(r => r.review_status === "reviewed" && r.score != null)
+    .map(r => Number(r.score));
+
   $("best").textContent =
-    records.length
-      ? Math.max(
-          ...records.map(
-            r => r.score || 0
-          )
-        ) + "/10"
+    reviewedScores.length
+      ? Math.max(...reviewedScores) + "/10"
       : "—";
 
 }
@@ -2795,33 +2702,21 @@ function renderRecords(){
     records.length + " submissions";
 
   if(!records.length){
-
-    $("completedWork").innerHTML = `
-      <div class="empty">
-        No completed work yet.
-      </div>
-    `;
-
+    $("completedWork").innerHTML = `<div class="empty">No submitted work yet.</div>`;
     return;
-
   }
 
-  /* Keep the main page compact. Each submission opens separately. */
   $("completedWork").innerHTML = `
     <div class="history-list">
       ${records.map((record,index) => {
-
         const topicLabel =
-          record.topic === "health"
-            ? "❤️ Health"
-            : record.topic === "nature"
-              ? "🌿 Nature"
-              : "💻 Science & Technology";
-
-        const preview = escapeHTML(
-          record.original_sentence || ""
-        );
-
+          record.topic === "health" ? "❤️ Health" :
+          record.topic === "nature" ? "🌿 Nature" :
+          "💻 Science & Technology";
+        const reviewed = record.review_status === "reviewed";
+        const status = reviewed
+          ? `✓ Teacher reviewed${record.score != null ? ` — ${record.score}/10` : ""}`
+          : "⏳ Waiting for teacher review";
         return `
           <div class="history-item ${index === 0 ? "latest" : ""}">
             <div class="history-info">
@@ -2831,25 +2726,24 @@ function renderRecords(){
               </div>
               <div class="history-meta">
                 ${formatDate(record.completed_at)}
-                &nbsp;•&nbsp; Attempt ${record.attempt_number}
-                &nbsp;•&nbsp; Score ${record.score}/10
+                &nbsp;•&nbsp; Attempt ${record.attempt_number || ""}
+                &nbsp;•&nbsp; ${status}
               </div>
-              <div class="history-preview">${preview}</div>
+              <div class="history-preview">${escapeHTML(record.original_sentence || "")}</div>
             </div>
             <button type="button" class="history-view" data-submission-index="${index}">
-              View Submission →
+              ${reviewed ? "View Learning Page →" : "View Submission →"}
             </button>
           </div>
         `;
-
       }).join("")}
     </div>
     <div style="margin-top:12px;color:#64748b;font-size:13px">
-      Select a submission to open its full feedback without adding the entire history to this page.
+      Your teacher will add the seven-part learning page after reviewing your work.
     </div>
   `;
-
 }
+
 
 function openSubmission(record){
 
@@ -2858,82 +2752,108 @@ function openSubmission(record){
     record.topic === "nature" ? "🌿 Nature" :
     "💻 Science & Technology";
 
-  const exercise = exercises[record.topic] && exercises[record.topic][Number(record.exercise_number) - 1];
-  const modelSentence = exercise && exercise.model ? exercise.model : "Study the strong topic sentence example from this exercise.";
-  const modelTopic = exercise && exercise.topicPart ? exercise.topicPart : "Identify the main topic clearly.";
-  const modelMainIdea = exercise && exercise.mainIdea ? exercise.mainIdea : "State one clear main idea.";
-  const modelVocab = exercise && exercise.vocab ? exercise.vocab : "Use precise academic vocabulary.";
-  const score = Number(record.score) || 0;
+  const exercise =
+    exercises[record.topic] &&
+    exercises[record.topic][Number(record.exercise_number) - 1];
 
-  const attention = score >= 8
-    ? `<div style="padding:12px;background:#ecfdf5;border-left:4px solid #15803d;border-radius:8px;line-height:1.7"><strong>🌟 No specific workbook error was recorded for this submission.</strong><p style="margin:7px 0 0">Read the Learn Why feedback and use the Next Step goal to keep improving.</p></div>`
-    : `<div style="padding:12px;background:#fff7ed;border-left:4px solid #ea580c;border-radius:8px;line-height:1.7"><strong>🔎 This submission needs revision.</strong><p style="margin:7px 0 0">Compare the original sentence, saved feedback, and corrected sentence carefully.</p></div>`;
+  const reviewed = record.review_status === "reviewed";
 
-  const nextStep = score >= 8
-    ? `<p style="line-height:1.75">🌟 Keep the same clear structure, but make the main idea more specific and use precise academic vocabulary.</p>`
-    : `<p style="line-height:1.75">✏️ Correct the problems identified in the saved feedback, then write one clear topic sentence that directly answers the task.</p>`;
+  const modelSentence =
+    record.teacher_model_sentence ||
+    (exercise && exercise.model) ||
+    "Your teacher will provide a strong topic sentence example.";
 
-  $("submissionModalTitle").textContent = "📖 Student Writing Learning Page";
+  const modelTopic =
+    record.teacher_model_topic ||
+    (exercise && exercise.topicPart) ||
+    "Teacher review pending";
 
-  $("submissionModalBody").innerHTML = `
-    <div class="learning-subtitle">
-      ${topicLabel} — Exercise ${escapeHTML(String(record.exercise_number))}
-      &nbsp;•&nbsp; Attempt ${escapeHTML(String(record.attempt_number))}
-      &nbsp;•&nbsp; ${formatDate(record.completed_at)}
-      &nbsp;•&nbsp; Score ${escapeHTML(String(record.score))}/10
-    </div>
+  const modelMainIdea =
+    record.teacher_model_main_idea ||
+    (exercise && exercise.mainIdea) ||
+    "Teacher review pending";
 
-    <div class="learning-section">
-      <h3>1️⃣ Original Sentence</h3>
-      <div class="annotated-sentence">${record.annotated_sentence || escapeHTML(record.original_sentence || "")}</div>
-      <div class="key"><span>🔴 Red = spelling / grammar / punctuation</span><span>🔵 Blue = weak word choice</span><span>⭕ Circle = capitalization</span><span>▢ Box = grammar</span></div>
-    </div>
+  const modelVocab =
+    record.teacher_model_vocabulary ||
+    (exercise && exercise.vocab) ||
+    "Teacher review pending";
 
-    <div class="learning-section"><h3>2️⃣ What Needs Attention?</h3>${attention}</div>
+  $("submissionModalTitle").textContent =
+    "📖 Student Writing Learning Page";
 
-    <div class="learning-section">
-      <h3>3️⃣ Learn Why</h3>
-      <div class="submission-modal-text">${escapeHTML(record.teacher_feedback || "No saved learning feedback is available for this submission.")}</div>
-    </div>
-
-    <div class="learning-section">
-      <h3>4️⃣ Correct Sentence</h3>
-      <div class="corrected">${escapeHTML(record.corrected_sentence || record.original_sentence || "")}</div>
-    </div>
-
-    <div class="learning-section">
-      <h3>5️⃣ Academic Words to Learn</h3>
-      <p>These are stronger words you can use instead of general everyday vocabulary.</p>
-      <table class="vocab-table"><thead><tr><th>Everyday Word</th><th>Academic Choices</th><th>Use These When...</th></tr></thead><tbody>
-        <tr><td class="old-word">good</td><td class="new-word">beneficial / advantageous</td><td>describing a positive effect</td></tr>
-        <tr><td class="old-word">bad</td><td class="new-word">harmful / detrimental</td><td>describing a negative effect</td></tr>
-        <tr><td class="old-word">big</td><td class="new-word">significant / considerable</td><td>describing importance or size</td></tr>
-        <tr><td class="old-word">important</td><td class="new-word">essential / significant / crucial</td><td>describing something necessary</td></tr>
-        <tr><td class="old-word">help</td><td class="new-word">assist / support / facilitate</td><td>describing assistance or improvement</td></tr>
-        <tr><td class="old-word">get</td><td class="new-word">obtain / receive / acquire</td><td>describing receiving or gaining something</td></tr>
-        <tr><td class="old-word">show</td><td class="new-word">demonstrate / illustrate</td><td>presenting evidence or an example</td></tr>
-        <tr><td class="old-word">make</td><td class="new-word">create / produce / develop</td><td>describing the creation or development</td></tr>
-      </tbody></table>
-    </div>
-
-    <div class="learning-section">
-      <h3>6️⃣ ⭐ Learn From a Strong Topic Sentence</h3>
-      <p>Study this example carefully. Notice how it introduces the topic, states a clear main idea, and uses academic vocabulary.</p>
-      <div class="model">${escapeHTML(modelSentence)}</div>
-      <div class="model-breakdown">
-        <div class="breakdown"><strong>Topic</strong><br><br>${escapeHTML(modelTopic)}</div>
-        <div class="breakdown"><strong>Main Idea</strong><br><br>${escapeHTML(modelMainIdea)}</div>
-        <div class="breakdown"><strong>Academic Vocabulary</strong><br><br>${escapeHTML(modelVocab)}</div>
+  if(!reviewed){
+    $("submissionModalBody").innerHTML = `
+      <div class="learning-subtitle">
+        ${topicLabel} — Exercise ${escapeHTML(String(record.exercise_number))}
+        &nbsp;•&nbsp; Attempt ${escapeHTML(String(record.attempt_number || ""))}
+        &nbsp;•&nbsp; ${formatDate(record.completed_at)}
       </div>
-    </div>
+      <div class="learning-section">
+        <h3>📨 Workbook Successfully Submitted</h3>
+        <p>Your work has been submitted successfully.</p>
+        <p><strong>Wait for your teacher to review your work.</strong></p>
+        <p>Your seven-part Student Writing Learning Page will appear after your teacher completes the review.</p>
+      </div>
+      <div class="learning-section">
+        <h3>1️⃣ Original Sentence</h3>
+        <div class="annotated-sentence">${escapeHTML(record.original_sentence || "")}</div>
+      </div>
+    `;
+  }
+  else{
+    $("submissionModalBody").innerHTML = `
+      <div class="learning-subtitle">
+        ${topicLabel} — Exercise ${escapeHTML(String(record.exercise_number))}
+        &nbsp;•&nbsp; Attempt ${escapeHTML(String(record.attempt_number || ""))}
+        &nbsp;•&nbsp; Reviewed ${formatDate(record.reviewed_at || record.completed_at)}
+        &nbsp;•&nbsp; Score ${escapeHTML(String(record.score ?? ""))}/10
+      </div>
 
-    <div class="learning-section"><h3>7️⃣ 🎯 Your Next Step</h3>${nextStep}</div>
-  `;
+      <div class="learning-section">
+        <h3>1️⃣ Original Sentence</h3>
+        <div class="annotated-sentence">${record.annotated_sentence || escapeHTML(record.original_sentence || "")}</div>
+      </div>
+
+      <div class="learning-section">
+        <h3>2️⃣ What Needs Attention?</h3>
+        <div class="submission-modal-text">${escapeHTML(record.what_needs_attention || "")}</div>
+      </div>
+
+      <div class="learning-section">
+        <h3>3️⃣ Learn Why</h3>
+        <div class="submission-modal-text">${escapeHTML(record.learn_why || record.teacher_feedback || "")}</div>
+      </div>
+
+      <div class="learning-section">
+        <h3>4️⃣ Correct Sentence</h3>
+        <div class="corrected">${escapeHTML(record.corrected_sentence || "")}</div>
+      </div>
+
+      <div class="learning-section">
+        <h3>5️⃣ Academic Words to Learn</h3>
+        <div class="submission-modal-text">${escapeHTML(record.academic_words || "")}</div>
+      </div>
+
+      <div class="learning-section">
+        <h3>6️⃣ ⭐ Learn From a Strong Topic Sentence</h3>
+        <div class="model">${escapeHTML(modelSentence)}</div>
+        <div class="model-breakdown">
+          <div class="breakdown"><strong>Topic</strong><br><br>${escapeHTML(modelTopic)}</div>
+          <div class="breakdown"><strong>Main Idea</strong><br><br>${escapeHTML(modelMainIdea)}</div>
+          <div class="breakdown"><strong>Academic Vocabulary</strong><br><br>${escapeHTML(modelVocab)}</div>
+        </div>
+      </div>
+
+      <div class="learning-section">
+        <h3>7️⃣ 🎯 Your Next Step</h3>
+        <div class="submission-modal-text">${escapeHTML(record.teacher_next_step || "")}</div>
+      </div>
+    `;
+  }
 
   $("submissionModal").classList.add("show");
   $("submissionModal").setAttribute("aria-hidden","false");
   document.body.style.overflow = "hidden";
-
 }
 
 
