@@ -1,0 +1,511 @@
+name: Update Student Learning Page
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Update learning page logic
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+
+          # Remove "Your" from the two headings requested.
+          s = s.replace('1️⃣ Your Original Sentence', '1️⃣ Original Sentence')
+          s = s.replace('4️⃣ Correct Your Sentence', '4️⃣ Correct Sentence')
+
+          # Preserve the seven-part learning page, but make Parts 2, 3 and 7 genuinely instructional.
+          start = s.index('function showLearningPage(')
+          end = s.index('\n\n/* =========================================================\n   SAVE TO SUPABASE', start)
+
+          new_show = r'''function showLearningPage(
+  text,
+  result
+){
+
+  const exercise =
+    exercises[topic][exerciseIndex];
+
+  const issues =
+    Array.isArray(result.issues)
+      ? result.issues
+      : [];
+
+  $("annotated").innerHTML =
+    annotate(text,result);
+
+  /* =====================================================
+     2. WHAT NEEDS ATTENTION?
+     This is the AI coaching area. Never call a sentence
+     "Excellent" merely because the rule checker found no
+     issue. Show the AI's quality judgment and explain what
+     the student should work on next.
+  ===================================================== */
+
+  const score = Number(result.score) || 0;
+
+  if(!issues.length){
+
+    let message = "";
+
+    if(score >= 8){
+      message = `
+        <div style="padding:12px;background:#ecfdf5;border-left:4px solid #15803d;border-radius:8px">
+          <strong>🌟 No specific workbook error was detected.</strong>
+          <p style="margin:8px 0 0;line-height:1.7">
+            The AI considers this sentence strong enough to continue developing.
+            Read the feedback below and look for one way to make the idea even more precise.
+          </p>
+        </div>
+      `;
+    }
+    else{
+      message = `
+        <div style="padding:12px;background:#fff7ed;border-left:4px solid #ea580c;border-radius:8px">
+          <strong>🔎 The sentence still needs attention.</strong>
+          <p style="margin:8px 0 0;line-height:1.7">
+            The workbook's specific grammar, spelling, punctuation, and vocabulary checker did not identify a rule-based error in this sentence.
+            <strong>This does not mean the sentence is correct.</strong>
+            Use the AI feedback below to improve clarity, task connection, sentence structure, and vocabulary.
+          </p>
+        </div>
+      `;
+    }
+
+    $("feedbackItems").innerHTML = message;
+
+  }
+  else{
+
+    $("feedbackItems").innerHTML =
+      issues.map((issue,index) => {
+
+        const label =
+          issue.category ||
+          (
+            issue.type === "capitalization"
+              ? "Capitalization"
+              : issue.type === "agreement"
+                ? "Subject–Verb Agreement"
+                : issue.type === "punctuation"
+                  ? "Punctuation"
+                  : issue.type === "spelling"
+                    ? "Spelling"
+                    : issue.type === "word"
+                      ? "Academic Word Choice"
+                      : "Sentence Structure"
+          );
+
+        const original =
+          issue.original ||
+          issue.word ||
+          "the marked part";
+
+        const correction =
+          issue.correction ||
+          "See the corrected sentence below.";
+
+        const explanation =
+          issue.explanation ||
+          issue.message ||
+          "This part needs revision.";
+
+        return `
+          <div class="feedback-item" style="margin-top:10px;padding:14px;background:white;border:1px solid #dbe4f2;border-left:5px solid ${issue.type === "word" ? "#2563eb" : "#dc2626"};border-radius:9px">
+            <strong>${index + 1}. ${escapeHTML(label)}</strong>
+            <div style="margin-top:10px;line-height:1.7">
+              <strong>Problem:</strong> ${escapeHTML(original)}
+            </div>
+            <div style="margin-top:7px;line-height:1.7">
+              <strong>What to change:</strong> ${escapeHTML(correction)}
+            </div>
+            <div style="margin-top:7px;line-height:1.7">
+              <strong>Coach's advice:</strong> ${escapeHTML(explanation)}
+            </div>
+          </div>
+        `;
+
+      }).join("") +
+      `
+        <div style="margin-top:12px;padding:11px;background:#eff6ff;border-radius:8px;line-height:1.7">
+          <strong>🎯 Coaching goal:</strong>
+          Correct these specific problems first. Then compare the corrected sentence with the original before writing your next sentence.
+        </div>
+      `;
+
+  }
+
+  /* =====================================================
+     3. LEARN WHY
+     Show incorrect versus correct wording/phrasing and
+     explain the reason for every AI-identified problem.
+  ===================================================== */
+
+  let explanation = "";
+
+  if(result.overall_feedback){
+    explanation += `
+      <div style="padding:12px;background:#eff6ff;border-left:4px solid #2563eb;border-radius:8px;line-height:1.75">
+        <strong>Overall feedback</strong>
+        <div style="margin-top:6px">${escapeHTML(result.overall_feedback)}</div>
+      </div>
+    `;
+  }
+
+  if(issues.length){
+
+    explanation += `
+      <div style="margin-top:12px;overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;background:white">
+          <thead>
+            <tr>
+              <th style="padding:10px;border-bottom:2px solid #cbd8ee;text-align:left;color:#991b1b">Incorrect</th>
+              <th style="padding:10px;border-bottom:2px solid #cbd8ee;text-align:left;color:#166534">Correct</th>
+              <th style="padding:10px;border-bottom:2px solid #cbd8ee;text-align:left;color:#1e3a8a">Why?</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${issues.map(issue => `
+              <tr>
+                <td style="padding:10px;border-bottom:1px solid #e2e8f0;vertical-align:top;color:#b91c1c;font-weight:bold">${escapeHTML(issue.original || issue.word || "")}</td>
+                <td style="padding:10px;border-bottom:1px solid #e2e8f0;vertical-align:top;color:#15803d;font-weight:bold">${escapeHTML(issue.correction || "See corrected sentence")}</td>
+                <td style="padding:10px;border-bottom:1px solid #e2e8f0;vertical-align:top;line-height:1.7">${escapeHTML(issue.explanation || issue.message || "")}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>
+    `;
+
+  }
+  else{
+
+    explanation += `
+      <div style="margin-top:10px;padding:12px;background:#f8fafc;border-radius:8px;line-height:1.75">
+        <strong>Why this matters:</strong>
+        No specific rule-based error was identified, so the student should use the overall AI feedback to check clarity, sentence structure, task connection, and precise vocabulary.
+      </div>
+    `;
+
+  }
+
+  $("teacherText").innerHTML =
+    explanation;
+
+  /* =====================================================
+     4. CORRECT SENTENCE
+  ===================================================== */
+
+  $("corrected").textContent =
+    result.corrected_sentence || text;
+
+  /* =====================================================
+     6. STRONG MODEL
+  ===================================================== */
+
+  $("modelSentence").textContent =
+    exercise.model;
+
+  $("modelBreakdown").innerHTML = `
+    <div class="breakdown">
+      <strong>Topic</strong>
+      <br><br>
+      ${escapeHTML(exercise.topicPart)}
+    </div>
+    <div class="breakdown">
+      <strong>Main Idea</strong>
+      <br><br>
+      ${escapeHTML(exercise.mainIdea)}
+    </div>
+    <div class="breakdown">
+      <strong>Academic Vocabulary</strong>
+      <br><br>
+      ${escapeHTML(exercise.vocab)}
+    </div>
+  `;
+
+  /* =====================================================
+     7. NEXT STEP
+     Prefer the AI's actual next-step goal over a generic
+     score-based sentence.
+  ===================================================== */
+
+  if(result.next_step){
+    $("nextStep").innerHTML =
+      `<p style="line-height:1.75"><strong>🎯 Goal for your next sentence:</strong> ${escapeHTML(result.next_step)}</p>`;
+  }
+  else if(score >= 8){
+    $("nextStep").innerHTML = `
+      <p style="line-height:1.75">
+        🌟 Keep the same clear structure, but make the main idea more specific and use precise academic vocabulary.
+      </p>
+    `;
+  }
+  else{
+    $("nextStep").innerHTML = `
+      <p style="line-height:1.75">
+        ✏️ Rewrite the sentence by correcting the problems above, then write one clear topic sentence that directly answers the task.
+      </p>
+    `;
+  }
+
+  $("feedback")
+    .classList
+    .add("show");
+
+}
+'''
+
+          s = s[:start] + new_show + s[end:]
+
+          # Keep the AI issue fields instead of flattening them into one HTML message.
+          old_issue_start = s.index('  const issues =\n    (data.issues || [])')
+          old_issue_end = s.index('\n\n\n  return {', old_issue_start)
+
+          new_issue_block = r'''  const issues =
+    (data.issues || [])
+      .map(
+        issue => {
+
+          const category =
+            (issue.category || "").toLowerCase();
+
+          let type = "grammar";
+
+          if(category.includes("spelling")){
+            type = "spelling";
+          }
+          else if(category.includes("capital")){
+            type = "capitalization";
+          }
+          else if(category.includes("punctuation")){
+            type = "punctuation";
+          }
+          else if(category.includes("vocabulary") || category.includes("word")){
+            type = "word";
+          }
+          else if(category.includes("agreement")){
+            type = "agreement";
+          }
+
+          return {
+            type,
+            category: issue.category || "Sentence Structure",
+            original: issue.original || "",
+            correction: issue.correction || "",
+            explanation: issue.explanation || "",
+            word: issue.original || "",
+            message: issue.explanation || ""
+          };
+
+        }
+      );'''
+
+          s = s[:old_issue_start] + new_issue_block + s[old_issue_end:]
+
+          # Make saved teacher feedback contain the same coaching details for future historical submissions.
+          gf_start = s.index('function generateRecordFeedback(')
+          gf_end = s.index('\n\n/* =========================================================\n   LOAD RECORDS', gf_start)
+
+          new_gf = r'''function generateRecordFeedback(
+  text,
+  result,
+  exercise
+){
+
+  const parts = [];
+
+  if(result.overall_feedback){
+    parts.push("Overall feedback: " + result.overall_feedback);
+  }
+
+  if(result.issues && result.issues.length){
+    parts.push("What Needs Attention:");
+
+    result.issues.forEach((issue,index) => {
+      parts.push(
+        `${index + 1}. ${issue.category || issue.type || "Sentence Structure"}` +
+        ` | Incorrect: ${issue.original || issue.word || ""}` +
+        ` | Correct: ${issue.correction || "See corrected sentence"}` +
+        ` | Why: ${issue.explanation || "Review the corrected sentence and the explanation above."}`
+      );
+    });
+  }
+  else{
+    parts.push("What Needs Attention: No specific workbook rule error was detected. Use the overall AI feedback to check clarity, task connection, sentence structure, and vocabulary.");
+  }
+
+  if(result.next_step){
+    parts.push("Next Step: " + result.next_step);
+  }
+
+  parts.push("Strong model: " + exercise.model);
+
+  return parts.join("\\n\\n");
+
+}
+'''
+
+          s = s[:gf_start] + new_gf + s[gf_end:]
+
+          # Replace the historical submission viewer with the same seven-part learning structure.
+          os_start = s.index('function openSubmission(record){')
+          os_end = s.index('\n\nfunction closeSubmission(){', os_start)
+
+          new_open = r'''function openSubmission(record){
+
+  const topicLabel =
+    record.topic === "health"
+      ? "❤️ Health"
+      : record.topic === "nature"
+        ? "🌿 Nature"
+        : "💻 Science & Technology";
+
+  const exercise =
+    exercises[record.topic] &&
+    exercises[record.topic][Number(record.exercise_number) - 1];
+
+  const modelSentence = exercise && exercise.model
+    ? exercise.model
+    : "Study the strong topic sentence example from this exercise.";
+
+  const modelTopic = exercise && exercise.topicPart
+    ? exercise.topicPart
+    : "Identify the main topic clearly.";
+
+  const modelMainIdea = exercise && exercise.mainIdea
+    ? exercise.mainIdea
+    : "State one clear main idea.";
+
+  const modelVocab = exercise && exercise.vocab
+    ? exercise.vocab
+    : "Use precise academic vocabulary.";
+
+  const score = Number(record.score) || 0;
+
+  const attention = score >= 8
+    ? `
+      <div style="padding:12px;background:#ecfdf5;border-left:4px solid #15803d;border-radius:8px;line-height:1.7">
+        <strong>🌟 No specific workbook error was recorded for this submission.</strong>
+        <p style="margin:7px 0 0">Read the Learn Why feedback and use the Next Step goal to keep improving.</p>
+      </div>`
+    : `
+      <div style="padding:12px;background:#fff7ed;border-left:4px solid #ea580c;border-radius:8px;line-height:1.7">
+        <strong>🔎 This submission needs revision.</strong>
+        <p style="margin:7px 0 0">The saved record may not contain individual issue details from older submissions, so compare the original sentence, saved feedback, and corrected sentence carefully.</p>
+      </div>`;
+
+  const nextStep = score >= 8
+    ? `<p style="line-height:1.75">🌟 Keep the same clear structure, but make the main idea more specific and use precise academic vocabulary.</p>`
+    : `<p style="line-height:1.75">✏️ Correct the problems identified in the saved feedback, then write one clear topic sentence that directly answers the task.</p>`;
+
+  $("submissionModalTitle").textContent =
+    "📖 Student Writing Learning Page";
+
+  $("submissionModalBody").innerHTML = `
+    <div class="learning-subtitle">
+      ${topicLabel} — Exercise ${escapeHTML(String(record.exercise_number))}
+      &nbsp;•&nbsp; Attempt ${escapeHTML(String(record.attempt_number))}
+      &nbsp;•&nbsp; ${formatDate(record.completed_at)}
+      &nbsp;•&nbsp; Score ${escapeHTML(String(record.score))}/10
+    </div>
+
+    <div class="learning-section">
+      <h3>1️⃣ Original Sentence</h3>
+      <div class="annotated-sentence">
+        ${record.annotated_sentence || escapeHTML(record.original_sentence || "")}
+      </div>
+      <div class="key">
+        <span>🔴 Red = spelling / grammar / punctuation</span>
+        <span>🔵 Blue = weak word choice</span>
+        <span>⭕ Circle = capitalization</span>
+        <span>▢ Box = grammar</span>
+      </div>
+    </div>
+
+    <div class="learning-section">
+      <h3>2️⃣ What Needs Attention?</h3>
+      ${attention}
+    </div>
+
+    <div class="learning-section">
+      <h3>3️⃣ Learn Why</h3>
+      <div class="submission-modal-text">${escapeHTML(record.teacher_feedback || "No saved learning feedback is available for this submission.")}</div>
+    </div>
+
+    <div class="learning-section">
+      <h3>4️⃣ Correct Sentence</h3>
+      <div class="corrected">
+        ${escapeHTML(record.corrected_sentence || record.original_sentence || "")}
+      </div>
+    </div>
+
+    <div class="learning-section">
+      <h3>5️⃣ Academic Words to Learn</h3>
+      <p>These are stronger words you can use instead of general everyday vocabulary.</p>
+      <table class="vocab-table">
+        <thead><tr><th>Everyday Word</th><th>Academic Choices</th><th>Use These When...</th></tr></thead>
+        <tbody>
+          <tr><td class="old-word">good</td><td class="new-word">beneficial / advantageous</td><td>describing a positive effect</td></tr>
+          <tr><td class="old-word">bad</td><td class="new-word">harmful / detrimental</td><td>describing a negative effect</td></tr>
+          <tr><td class="old-word">big</td><td class="new-word">significant / considerable</td><td>describing importance or size</td></tr>
+          <tr><td class="old-word">important</td><td class="new-word">essential / significant / crucial</td><td>describing something necessary</td></tr>
+          <tr><td class="old-word">help</td><td class="new-word">assist / support / facilitate</td><td>describing assistance or improvement</td></tr>
+          <tr><td class="old-word">get</td><td class="new-word">obtain / receive / acquire</td><td>describing receiving or gaining something</td></tr>
+          <tr><td class="old-word">show</td><td class="new-word">demonstrate / illustrate</td><td>presenting evidence or an example</td></tr>
+          <tr><td class="old-word">make</td><td class="new-word">create / produce / develop</td><td>describing the creation or development</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="learning-section">
+      <h3>6️⃣ ⭐ Learn From a Strong Topic Sentence</h3>
+      <p>Study this example carefully. Notice how it introduces the topic, states a clear main idea, and uses academic vocabulary.</p>
+      <div class="model">${escapeHTML(modelSentence)}</div>
+      <div class="model-breakdown">
+        <div class="breakdown"><strong>Topic</strong><br><br>${escapeHTML(modelTopic)}</div>
+        <div class="breakdown"><strong>Main Idea</strong><br><br>${escapeHTML(modelMainIdea)}</div>
+        <div class="breakdown"><strong>Academic Vocabulary</strong><br><br>${escapeHTML(modelVocab)}</div>
+      </div>
+    </div>
+
+    <div class="learning-section">
+      <h3>7️⃣ 🎯 Your Next Step</h3>
+      ${nextStep}
+    </div>
+  `;
+
+  $("submissionModal").classList.add("show");
+  $("submissionModal").setAttribute("aria-hidden","false");
+  document.body.style.overflow = "hidden";
+
+}
+'''
+
+          s = s[:os_start] + new_open + s[os_end:]
+
+          p.write_text(s, encoding='utf-8')
+
+      - name: Commit and remove this one-time workflow
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          rm -f .github/workflows/update-learning-page.yml
+          git add index.html .github/workflows/update-learning-page.yml
+          git commit -m "Refine seven-part student writing learning page"
+          git push
