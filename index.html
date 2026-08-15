@@ -2649,13 +2649,71 @@ function showLearningPage(
 
   } else {
 
-    explanation += `
-      <p>
-        Your sentence is developing well.
-        Now focus on making your vocabulary precise
-        and your main idea clear.
-      </p>
-    `;
+    const score = Number(result.score) || 0;
+    const issueTypes = result.issues.map(i => i.type);
+    const hasGrammar =
+      issueTypes.includes("grammar") ||
+      issueTypes.includes("agreement");
+    const hasSpelling =
+      issueTypes.includes("spelling");
+    const hasPunctuation =
+      issueTypes.includes("punctuation") ||
+      issueTypes.includes("capitalization");
+    const hasVocabulary =
+      issueTypes.includes("word");
+
+    let lesson = "";
+
+    if(score <= 3){
+      lesson = `
+        <p>
+          Your sentence needs major revision. First make sure it directly answers the writing task, then correct the marked errors and state one clear main idea.
+        </p>
+      `;
+    }
+    else if(score <= 5){
+      lesson = `
+        <p>
+          Your sentence has a beginning idea, but it needs clearer grammar and a stronger connection to the writing task. Rewrite it as one complete topic sentence with one clear main idea.
+        </p>
+      `;
+    }
+    else if(score <= 7){
+      lesson = `
+        <p>
+          Your sentence communicates part of the idea, but it still needs revision before it is a strong topic sentence. Make the main idea more specific and use precise academic vocabulary.
+        </p>
+      `;
+    }
+    else {
+      lesson = `
+        <p>
+          Your sentence is generally strong. To improve it further, make the main idea more specific and choose precise academic vocabulary.
+        </p>
+      `;
+    }
+
+    const focus = [];
+    if(hasGrammar) focus.push("grammar and sentence structure");
+    if(hasSpelling) focus.push("spelling");
+    if(hasPunctuation) focus.push("capitalization and punctuation");
+    if(hasVocabulary) focus.push("word choice");
+
+    if(focus.length){
+      lesson += `
+        <p>
+          <strong>Your learning focus:</strong> Work first on ${focus.join(", ")}. Then compare your original sentence with the corrected sentence below.
+        </p>
+      `;
+    } else {
+      lesson += `
+        <p>
+          <strong>Your learning focus:</strong> Compare your original sentence with the corrected sentence below and check that your topic and main idea are both clear.
+        </p>
+      `;
+    }
+
+    explanation += lesson;
 
   }
 
