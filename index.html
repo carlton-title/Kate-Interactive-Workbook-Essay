@@ -877,8 +877,7 @@ textarea:focus{
     id="analyzing"
     class="analyzing">
 
-    👨‍🏫 Your teacher is reading
-    your sentence...
+    Submitting...
 
   </div>
 
@@ -2125,11 +2124,8 @@ async function analyze(text){
       );
 
 
-  const {
-    data,
-    error
-  } =
-    await supabaseClient
+  const invokePromise =
+    supabaseClient
       .functions
       .invoke(
         "essay-ai-tutor",
@@ -2155,6 +2151,28 @@ async function analyze(text){
           }
         }
       );
+
+  const timeoutPromise =
+    new Promise((_, reject) => {
+      setTimeout(
+        () =>
+          reject(
+            new Error(
+              "The AI tutor took too long to respond. Please try again."
+            )
+          ),
+        30000
+      );
+    });
+
+  const {
+    data,
+    error
+  } =
+    await Promise.race([
+      invokePromise,
+      timeoutPromise
+    ]);
 
 
   if(error){
@@ -3197,58 +3215,91 @@ $("check").addEventListener(
       .remove("show");
 
 
-    setTimeout(
-      async () => {
-
-        await updateSpelling(text);
-
-const result =
-  await analyze(text);
+    $("saveStatus").textContent = "";
 
 
-        showLearningPage(
-          text,
-          result
+    try {
+
+      await new Promise(
+        resolve =>
+          setTimeout(resolve, 700)
+      );
+
+
+      await updateSpelling(text);
+
+
+      const result =
+        await analyze(text);
+
+
+      showLearningPage(
+        text,
+        result
+      );
+
+
+      const attempts =
+        records.filter(
+          r =>
+            r.topic === topic &&
+            r.exercise_number ===
+              exerciseIndex + 1
+        ).length;
+
+
+      await saveSubmission(
+        text,
+        result,
+        attempts + 1
+      );
+
+
+      await loadRecords();
+
+
+      $("next").disabled = false;
+
+
+      $("feedback")
+        .scrollIntoView({
+          behavior:"smooth"
+        });
+
+
+    }
+    catch(error){
+
+      console.error(
+        "Analysis failed:",
+        error
+      );
+
+
+      $("saveStatus").textContent =
+        "⚠️ " +
+        (
+          error.message ||
+          "The writing feedback could not be generated."
         );
 
 
-        const attempts =
-          records.filter(
-            r =>
-              r.topic === topic &&
-              r.exercise_number ===
-                exerciseIndex + 1
-          ).length;
+      $("saveStatus")
+        .className =
+        "save-status save-error";
 
 
-        await saveSubmission(
-          text,
-          result,
-          attempts + 1
-        );
+    }
+    finally{
+
+      $("analyzing")
+        .classList
+        .remove("show");
 
 
-        await loadRecords();
+      $("check").disabled = false;
 
-
-        $("analyzing")
-          .classList
-          .remove("show");
-
-
-        $("next").disabled = false;
-
-        $("check").disabled = false;
-
-
-        $("feedback")
-          .scrollIntoView({
-            behavior:"smooth"
-          });
-
-      },
-      700
-    );
+    }
 
   }
 );
