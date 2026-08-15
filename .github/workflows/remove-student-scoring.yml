@@ -1,0 +1,73 @@
+name: Remove Student Scoring
+on:
+  push:
+    branches:
+      - main
+permissions:
+  contents: write
+jobs:
+  update:
+    if: ${{ !startsWith(github.event.head_commit.message, 'REMOVE-SCORE') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Remove student score displays
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+
+          # Remove the student statistics panel entirely.
+          start = s.find('<!-- STATS -->')
+          end = s.find('<!-- COMPLETED WORK -->')
+          if start != -1 and end != -1:
+              s = s[:start] + s[end:]
+
+          # Remove score-dependent student status text.
+          s = s.replace(
+              '? `✓ Teacher reviewed${record.score != null ? ` — ${record.score}/10` : ""}`',
+              '? `✓ Teacher reviewed`'
+          )
+
+          # Remove the score from the reviewed submission modal.
+          s = s.replace(
+              '        &nbsp;•&nbsp; Score ${escapeHTML(String(record.score ?? ""))}/10\n',
+              ''
+          )
+
+          # Remove score calculations from the student statistics function.
+          old = '''  $("strong").textContent =
+    records.filter(
+      r => r.review_status === "reviewed" && r.score >= 8
+    ).length;
+
+
+  $("needs").textContent =
+    records.filter(
+      r => r.review_status === "reviewed" && r.score < 8
+    ).length;
+
+
+  const reviewedScores = records
+    .filter(r => r.review_status === "reviewed" && r.score != null)
+    .map(r => Number(r.score));
+
+  $("best").textContent =
+    reviewedScores.length
+      ? Math.max(...reviewedScores) + "/10"
+      : "—";
+'''
+          s = s.replace(old, '')
+
+          p.write_text(s, encoding='utf-8')
+          PY
+      - name: Commit and remove workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html .github/workflows/remove-student-scoring.yml
+          git commit -m "REMOVE-SCORE Remove student scoring"
+          git rm .github/workflows/remove-student-scoring.yml
+          git commit -m "REMOVE-SCORE Remove temporary workflow"
+          git push
