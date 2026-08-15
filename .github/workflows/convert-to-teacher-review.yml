@@ -1,0 +1,421 @@
+name: Convert to Teacher Review Workflow
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Convert student page to teacher-review submission flow
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+
+          s = s.replace('🔍 Analyze My Sentence', '📨 Submit My Work')
+          s = s.replace('Submitting...', 'Submitting your work...')
+          s = s.replace('Your mistakes are turned into a short\n    writing lesson. Study this page before\n    writing your next sentence.', 'Your work will be reviewed personally by your teacher.\n    After your teacher reviews it, your seven-part learning page will appear here.')
+
+          # Remove the student-facing AI analysis function. The student now submits only.
+          start = s.index('/* =========================================================\n   ANALYSIS\n========================================================= */')
+          end = s.index('\nfunction correctedSentence(text){', start)
+          replacement = '''/* =========================================================\n   TEACHER REVIEW WORKFLOW\n   Student submissions are stored as pending.\n   No AI tutor feedback is generated or shown.\n========================================================= */\n\n'''
+          s = s[:start] + replacement + s[end:]
+
+          # Replace the save function with a submission-only writer.
+          start = s.index('async function saveSubmission(')
+          end = s.index('\n\n/* =========================================================\n   RECORD FEEDBACK', start)
+          replacement = r'''async function saveSubmission(text, attemptNumber){
+
+  const { error } =
+    await supabaseClient
+      .from("essay_submissions")
+      .insert({
+        student_name: currentStudentName,
+        student_id: currentStudentID,
+        student_number: currentStudentNumber,
+        topic: topic,
+        exercise_number: exerciseIndex + 1,
+        strategy: $("strategy").value,
+        original_sentence: text,
+        annotated_sentence: escapeHTML(text),
+        corrected_sentence: null,
+        teacher_feedback: null,
+        score: null,
+        attempt_number: attemptNumber,
+        completed_at: new Date().toISOString(),
+        review_status: "pending",
+        reviewed_at: null,
+        what_needs_attention: null,
+        learn_why: null,
+        academic_words: null,
+        teacher_model_sentence: null,
+        teacher_model_topic: null,
+        teacher_model_main_idea: null,
+        teacher_model_vocabulary: null,
+        teacher_next_step: null
+      });
+
+  if(error){
+    console.error("Supabase submission error:", error);
+    $("saveStatus").textContent =
+      "⚠️ Your work could not be submitted. Please try again.";
+    $("saveStatus").className =
+      "save-status save-error";
+    return false;
+  }
+
+  $("saveStatus").textContent =
+    "✓ Workbook successfully submitted. Wait for your teacher to review your work.";
+  $("saveStatus").className =
+    "save-status save-success";
+  return true;
+}
+'''
+          s = s[:start] + replacement + s[end:]
+
+          # The old generated-feedback function is no longer used.
+          start = s.index('function generateRecordFeedback(')
+          end = s.index('\n\n/* =========================================================\n   LOAD RECORDS', start)
+          s = s[:start] + '\n' + s[end:]
+
+          # Replace the learning-page renderer with a simple pending state.
+          start = s.index('function showLearningPage(')
+          end = s.index('\n\n/* =========================================================\n   SAVE TO SUPABASE', start) if '\n\n/* =========================================================\n   SAVE TO SUPABASE' in s[start:] else s.index('\n\n/* =========================================================\n   LOAD RECORDS', start)
+          pending_renderer = r'''function showPendingSubmission(){
+
+  $("feedbackItems").innerHTML = `
+    <div style="padding:14px;background:#eff6ff;border-left:5px solid #2563eb;border-radius:9px;line-height:1.8">
+      <strong>📨 Workbook successfully submitted.</strong>
+      <p style="margin:7px 0 0">Wait for your teacher to review your work. Your seven-part Student Writing Learning Page will appear here after your teacher completes the review.</p>
+    </div>
+  `;
+
+  $("teacherText").innerHTML = `
+    <div style="padding:14px;background:#f8fafc;border-radius:9px;line-height:1.8">
+      Your teacher will personally explain what needs attention and why.
+    </div>
+  `;
+
+  $("corrected").textContent = "Waiting for teacher review.";
+  $("modelSentence").textContent = "Your teacher will provide a strong topic sentence example after reviewing your work.";
+  $("modelBreakdown").innerHTML = `
+    <div class="breakdown"><strong>Topic</strong><br><br>Teacher review pending</div>
+    <div class="breakdown"><strong>Main Idea</strong><br><br>Teacher review pending</div>
+    <div class="breakdown"><strong>Academic Vocabulary</strong><br><br>Teacher review pending</div>
+  `;
+  $("nextStep").innerHTML = `<p style="line-height:1.75">🎯 Wait for your teacher's review. Your next writing goal will be provided personally.</p>`;
+  $("feedback").classList.add("show");
+}
+'''
+          s = s[:start] + pending_renderer + s[end:]
+
+          # Replace the submission history viewer so pending submissions do not pretend to have scores or machine feedback.
+          start = s.index('function openSubmission(record){')
+          end = s.index('\n\nfunction closeSubmission(){', start)
+          new_open = r'''function openSubmission(record){
+
+  const topicLabel =
+    record.topic === "health" ? "❤️ Health" :
+    record.topic === "nature" ? "🌿 Nature" :
+    "💻 Science & Technology";
+
+  const exercise =
+    exercises[record.topic] &&
+    exercises[record.topic][Number(record.exercise_number) - 1];
+
+  const reviewed =
+    record.review_status === "reviewed";
+
+  const modelSentence =
+    record.teacher_model_sentence ||
+    (exercise && exercise.model) ||
+    "Your teacher will provide a strong topic sentence example.";
+
+  const modelTopic =
+    record.teacher_model_topic ||
+    (exercise && exercise.topicPart) ||
+    "Teacher review pending";
+
+  const modelMainIdea =
+    record.teacher_model_main_idea ||
+    (exercise && exercise.mainIdea) ||
+    "Teacher review pending";
+
+  const modelVocab =
+    record.teacher_model_vocabulary ||
+    (exercise && exercise.vocab) ||
+    "Teacher review pending";
+
+  $("submissionModalTitle").textContent =
+    "📖 Student Writing Learning Page";
+
+  if(!reviewed){
+
+    $("submissionModalBody").innerHTML = `
+      <div class="learning-subtitle">
+        ${topicLabel} — Exercise ${escapeHTML(String(record.exercise_number))}
+        &nbsp;•&nbsp; Attempt ${escapeHTML(String(record.attempt_number || ""))}
+        &nbsp;•&nbsp; ${formatDate(record.completed_at)}
+      </div>
+
+      <div class="learning-section">
+        <h3>📨 Workbook Successfully Submitted</h3>
+        <p>Your work has been submitted successfully.</p>
+        <p><strong>Wait for your teacher to review your work.</strong></p>
+        <p>Your seven-part Student Writing Learning Page will appear after your teacher completes the review.</p>
+      </div>
+
+      <div class="learning-section">
+        <h3>1️⃣ Original Sentence</h3>
+        <div class="annotated-sentence">${escapeHTML(record.original_sentence || "")}</div>
+      </div>
+    `;
+
+  }
+  else{
+
+    $("submissionModalBody").innerHTML = `
+      <div class="learning-subtitle">
+        ${topicLabel} — Exercise ${escapeHTML(String(record.exercise_number))}
+        &nbsp;•&nbsp; Attempt ${escapeHTML(String(record.attempt_number || ""))}
+        &nbsp;•&nbsp; ${formatDate(record.completed_at)}
+        &nbsp;•&nbsp; Score ${escapeHTML(String(record.score ?? ""))}/10
+      </div>
+
+      <div class="learning-section">
+        <h3>1️⃣ Original Sentence</h3>
+        <div class="annotated-sentence">${record.annotated_sentence || escapeHTML(record.original_sentence || "")}</div>
+      </div>
+
+      <div class="learning-section">
+        <h3>2️⃣ What Needs Attention?</h3>
+        <div class="submission-modal-text">${escapeHTML(record.what_needs_attention || "Your teacher has not added this section yet.")}</div>
+      </div>
+
+      <div class="learning-section">
+        <h3>3️⃣ Learn Why</h3>
+        <div class="submission-modal-text">${escapeHTML(record.learn_why || record.teacher_feedback || "Your teacher has not added this section yet.")}</div>
+      </div>
+
+      <div class="learning-section">
+        <h3>4️⃣ Correct Sentence</h3>
+        <div class="corrected">${escapeHTML(record.corrected_sentence || "Your teacher has not added the corrected sentence yet.")}</div>
+      </div>
+
+      <div class="learning-section">
+        <h3>5️⃣ Academic Words to Learn</h3>
+        <div class="submission-modal-text">${escapeHTML(record.academic_words || "Your teacher has not added the academic vocabulary lesson yet.")}</div>
+      </div>
+
+      <div class="learning-section">
+        <h3>6️⃣ ⭐ Learn From a Strong Topic Sentence</h3>
+        <div class="model">${escapeHTML(modelSentence)}</div>
+        <div class="model-breakdown">
+          <div class="breakdown"><strong>Topic</strong><br><br>${escapeHTML(modelTopic)}</div>
+          <div class="breakdown"><strong>Main Idea</strong><br><br>${escapeHTML(modelMainIdea)}</div>
+          <div class="breakdown"><strong>Academic Vocabulary</strong><br><br>${escapeHTML(modelVocab)}</div>
+        </div>
+      </div>
+
+      <div class="learning-section">
+        <h3>7️⃣ 🎯 Your Next Step</h3>
+        <div class="submission-modal-text">${escapeHTML(record.teacher_next_step || "Your teacher has not added the next-step goal yet.")}</div>
+      </div>
+    `;
+  }
+
+  $("submissionModal").classList.add("show");
+  $("submissionModal").setAttribute("aria-hidden","false");
+  document.body.style.overflow = "hidden";
+}
+'''
+          s = s[:start] + new_open + s[end:]
+
+          # Replace the Analyze button handler with a submission handler.
+          start = s.index('/* =========================================================\n   ANALYZE BUTTON\n========================================================= */')
+          end = s.index('\n\n/* =========================================================\n   TOPIC BUTTONS', start)
+          handler = r'''/* =========================================================
+   SUBMIT BUTTON
+========================================================= */
+
+$("check").addEventListener(
+  "click",
+  async () => {
+
+    const text =
+      $("answer").value.trim();
+
+    if(!text){
+      alert("Write one topic sentence before submitting.");
+      return;
+    }
+
+    $("check").disabled = true;
+    $("analyzing").classList.add("show");
+    $("feedback").classList.remove("show");
+    $("saveStatus").textContent = "";
+
+    try {
+
+      const attempts =
+        records.filter(r =>
+          r.topic === topic &&
+          r.exercise_number === exerciseIndex + 1
+        ).length;
+
+      const saved =
+        await saveSubmission(
+          text,
+          attempts + 1
+        );
+
+      if(!saved) return;
+
+      showPendingSubmission();
+      await loadRecords();
+
+      $("next").disabled = false;
+
+      $("feedback").scrollIntoView({
+        behavior:"smooth"
+      });
+
+    }
+    catch(error){
+
+      console.error("Submission failed:", error);
+
+      $("saveStatus").textContent =
+        "⚠️ Your work could not be submitted. Please try again.";
+
+      $("saveStatus").className =
+        "save-status save-error";
+
+    }
+    finally{
+      $("check").disabled = false;
+      $("analyzing").classList.remove("show");
+    }
+  }
+);
+'''
+          s = s[:start] + handler + s[end:]
+
+          # Render history with a pending/reviewed status instead of score assumptions.
+          start = s.index('function renderRecords(){')
+          end = s.index('\n\nfunction openSubmission(record){', start)
+          render = r'''function renderRecords(){
+
+  $("completedCount").textContent =
+    records.length + " submissions";
+
+  if(!records.length){
+    $("completedWork").innerHTML = `<div class="empty">No submitted work yet.</div>`;
+    return;
+  }
+
+  $("completedWork").innerHTML = `
+    <div class="history-list">
+      ${records.map((record,index) => {
+        const topicLabel =
+          record.topic === "health" ? "❤️ Health" :
+          record.topic === "nature" ? "🌿 Nature" :
+          "💻 Science & Technology";
+
+        const reviewed = record.review_status === "reviewed";
+        const status = reviewed
+          ? `✓ Teacher reviewed${record.score != null ? ` — ${record.score}/10` : ""}`
+          : "⏳ Waiting for teacher review";
+
+        return `
+          <div class="history-item ${index === 0 ? "latest" : ""}">
+            <div class="history-info">
+              <div class="history-title">
+                ${index === 0 ? "⭐ Latest Submission — " : ""}
+                ${topicLabel} — Exercise ${record.exercise_number}
+              </div>
+              <div class="history-meta">
+                ${formatDate(record.completed_at)}
+                &nbsp;•&nbsp; Attempt ${record.attempt_number || ""}
+                &nbsp;•&nbsp; ${status}
+              </div>
+              <div class="history-preview">${escapeHTML(record.original_sentence || "")}</div>
+            </div>
+            <button type="button" class="history-view" data-submission-index="${index}">
+              ${reviewed ? "View Learning Page →" : "View Submission →"}
+            </button>
+          </div>
+        `;
+      }).join("")}
+    </div>
+    <div style="margin-top:12px;color:#64748b;font-size:13px">
+      Your teacher will add the seven-part learning page after reviewing your work.
+    </div>
+  `;
+}
+'''
+          s = s[:start] + render + s[end:]
+
+          # Stats should count only reviewed scores.
+          s = s.replace('''  $("strong").textContent =
+    records.filter(
+      r => r.score >= 8
+    ).length;''', '''  $("strong").textContent =
+    records.filter(
+      r => r.review_status === "reviewed" && r.score >= 8
+    ).length;''')
+
+          s = s.replace('''  $("needs").textContent =
+    records.filter(
+      r => r.score < 8
+    ).length;''', '''  $("needs").textContent =
+    records.filter(
+      r => r.review_status === "reviewed" && r.score < 8
+    ).length;''')
+
+          s = s.replace('''  $("best").textContent =
+    records.length
+      ? Math.max(
+          ...records.map(
+            r => r.score || 0
+          )
+        ) + "/10"
+      : "—";''', '''  const reviewedScores = records
+    .filter(r => r.review_status === "reviewed" && r.score != null)
+    .map(r => Number(r.score));
+
+  $("best").textContent =
+    reviewedScores.length
+      ? Math.max(...reviewedScores) + "/10"
+      : "—";''')
+
+          # Prevent the old spelling checker from being part of the submission flow.
+          s = s.replace('await updateSpelling(text);\n\n\n      const result =\n        await analyze(text);', '')
+
+          # Make the page explicitly state that feedback is teacher-created.
+          s = s.replace('📖 Student Writing Learning Page', '📖 Student Writing Learning Page')
+
+          p.write_text(s, encoding='utf-8')
+
+      - name: Remove one-time workflow
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          rm -f .github/workflows/convert-to-teacher-review.yml
+          git add index.html .github/workflows/convert-to-teacher-review.yml
+          git commit -m "Use teacher review instead of AI tutor"
+          git push
