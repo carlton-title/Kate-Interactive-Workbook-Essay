@@ -942,7 +942,7 @@ textarea:focus{
   <div class="learning-section">
 
     <h3>
-      1️⃣ Your Original Sentence
+      1️⃣ Original Sentence
     </h3>
 
     <div
@@ -1005,7 +1005,7 @@ textarea:focus{
   <div class="learning-section">
 
     <h3>
-      4️⃣ Correct Your Sentence
+      4️⃣ Correct Sentence
     </h3>
 
     <div
@@ -2244,106 +2244,27 @@ async function analyze(text){
 
   const issues =
     (data.issues || [])
-      .map(
-        issue => {
+      .map(issue => {
 
-          const category =
-            (
-              issue.category ||
-              ""
-            ).toLowerCase();
+        const category = (issue.category || "").toLowerCase();
+        let type = "grammar";
 
+        if(category.includes("spelling")) type = "spelling";
+        else if(category.includes("capital")) type = "capitalization";
+        else if(category.includes("punctuation")) type = "punctuation";
+        else if(category.includes("vocabulary") || category.includes("word")) type = "word";
+        else if(category.includes("agreement")) type = "agreement";
 
-          let type =
-            "grammar";
-
-
-          if(
-            category.includes(
-              "spelling"
-            )
-          ){
-
-            type =
-              "spelling";
-
-          }
-
-          else if(
-            category.includes(
-              "capital"
-            )
-          ){
-
-            type =
-              "capitalization";
-
-          }
-
-          else if(
-            category.includes(
-              "punctuation"
-            )
-          ){
-
-            type =
-              "punctuation";
-
-          }
-
-          else if(
-            category.includes(
-              "vocabulary"
-            ) ||
-            category.includes(
-              "word"
-            )
-          ){
-
-            type =
-              "word";
-
-          }
-
-          else if(
-            category.includes(
-              "agreement"
-            )
-          ){
-
-            type =
-              "agreement";
-
-          }
-
-
-          return {
-
-            type:
-
-              type,
-
-            word:
-              issue.original || "",
-
-            message:
-
-              `<strong>${
-                issue.explanation || ""
-              }</strong>` +
-
-              (
-                issue.correction
-                  ? `<br><br><strong>Use:</strong> ${
-                      issue.correction
-                    }`
-                  : ""
-              )
-
-          };
-
-        }
-      );
+        return {
+          type,
+          category: issue.category || "Sentence Structure",
+          original: issue.original || "",
+          correction: issue.correction || "",
+          explanation: issue.explanation || "",
+          word: issue.original || "",
+          message: issue.explanation || ""
+        };
+      });
 
 
   return {
@@ -2577,345 +2498,116 @@ function showLearningPage(
   result
 ){
 
-  const exercise =
-    exercises[topic][exerciseIndex];
+  const exercise = exercises[topic][exerciseIndex];
+  const issues = Array.isArray(result.issues) ? result.issues : [];
+  const score = Number(result.score) || 0;
 
+  $("annotated").innerHTML = annotate(text,result);
 
-  $("annotated").innerHTML =
-    annotate(text,result);
-
-
-  /* WHAT NEEDS ATTENTION */
-
-  if(!result.issues.length){
-
-    $("feedbackItems").innerHTML = `
-
-      <div class="learning-section"
-           style="margin:0;background:#ecfdf5;border-left-color:#15803d">
-
-        <strong>
-          🌟 Excellent!
-        </strong>
-
-        Your sentence does not contain
-        any of the grammar, spelling,
-        punctuation, or vocabulary problems
-        currently checked by this workbook.
-
-      </div>
-
-    `;
-
+  /* 2. WHAT NEEDS ATTENTION */
+  if(!issues.length){
+    $("feedbackItems").innerHTML = score >= 8
+      ? `
+        <div style="padding:12px;background:#ecfdf5;border-left:4px solid #15803d;border-radius:8px;line-height:1.7">
+          <strong>🌟 No specific workbook error was detected.</strong>
+          <p style="margin:7px 0 0">The AI considers this sentence strong enough to continue developing. Read the feedback below and look for one way to make the idea even more precise.</p>
+        </div>
+      `
+      : `
+        <div style="padding:12px;background:#fff7ed;border-left:4px solid #ea580c;border-radius:8px;line-height:1.7">
+          <strong>🔎 The sentence still needs attention.</strong>
+          <p style="margin:7px 0 0">The rule checker did not identify a specific grammar, spelling, punctuation, or vocabulary error. <strong>This does not mean the sentence is correct.</strong> Use the AI feedback below to improve clarity, task connection, sentence structure, and vocabulary.</p>
+        </div>
+      `;
   }
   else{
-
-    $("feedbackItems").innerHTML =
-      result.issues.map(
-        issue => `
-
-          <div
-            class="feedback-item"
-            style="
-              margin-top:9px;
-              padding:12px;
-              background:white;
-              border-left:4px solid
-              ${
-                issue.type === "word"
-                  ? "#2563eb"
-                  : "#dc2626"
-              };
-              border-radius:8px;
-            ">
-
-            <strong>
-
-              ${
-                issue.type === "capitalization"
-                  ? "⭕ Capitalization"
-                  : issue.type === "agreement"
-                    ? "▢ Subject–Verb Agreement"
-                    : issue.type === "punctuation"
-                      ? "🔴 Punctuation"
-                      : issue.type === "spelling"
-                        ? "🔴 Spelling"
-                        : issue.type === "word"
-                          ? "🔵 Academic Word Choice"
-                          : "📖 Sentence Development"
-              }
-
-            </strong>
-
-            <br><br>
-
-            ${issue.message}
-
-          </div>
-
-        `
-      ).join("");
-
+    $("feedbackItems").innerHTML = issues.map((issue,index) => {
+      const label = issue.category || issue.type || "Sentence Structure";
+      const original = issue.original || issue.word || "the marked part";
+      const correction = issue.correction || "See the corrected sentence below.";
+      const explanation = issue.explanation || issue.message || "This part needs revision.";
+      return `
+        <div class="feedback-item" style="margin-top:10px;padding:14px;background:white;border:1px solid #dbe4f2;border-left:5px solid ${issue.type === "word" ? "#2563eb" : "#dc2626"};border-radius:9px">
+          <strong>${index + 1}. ${escapeHTML(label)}</strong>
+          <div style="margin-top:9px;line-height:1.7"><strong>Problem:</strong> ${escapeHTML(original)}</div>
+          <div style="margin-top:7px;line-height:1.7"><strong>What to change:</strong> ${escapeHTML(correction)}</div>
+          <div style="margin-top:7px;line-height:1.7"><strong>Coach's advice:</strong> ${escapeHTML(explanation)}</div>
+        </div>
+      `;
+    }).join("") + `
+      <div style="margin-top:12px;padding:11px;background:#eff6ff;border-radius:8px;line-height:1.7">
+        <strong>🎯 Coaching goal:</strong> Correct these specific problems first. Then compare the corrected sentence with the original before writing your next sentence.
+      </div>
+    `;
   }
 
-
-  /* LEARN WHY */
-
+  /* 3. LEARN WHY */
   let explanation = "";
 
   if(result.overall_feedback){
-
     explanation += `
-      <p>
-        ${escapeHTML(result.overall_feedback)}
-      </p>
+      <div style="padding:12px;background:#eff6ff;border-left:4px solid #2563eb;border-radius:8px;line-height:1.75">
+        <strong>Overall feedback</strong>
+        <div style="margin-top:6px">${escapeHTML(result.overall_feedback)}</div>
+      </div>
     `;
-
   }
 
-  if(result.issues && result.issues.length){
-
+  if(issues.length){
     explanation += `
-      <p>
-        Study the explanations above, then compare
-        your original sentence with the corrected
-        version below.
-      </p>
+      <div style="margin-top:12px;overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;background:white">
+          <thead><tr>
+            <th style="padding:10px;border-bottom:2px solid #cbd8ee;text-align:left;color:#991b1b">Incorrect</th>
+            <th style="padding:10px;border-bottom:2px solid #cbd8ee;text-align:left;color:#166534">Correct</th>
+            <th style="padding:10px;border-bottom:2px solid #cbd8ee;text-align:left;color:#1e3a8a">Why?</th>
+          </tr></thead>
+          <tbody>
+            ${issues.map(issue => `
+              <tr>
+                <td style="padding:10px;border-bottom:1px solid #e2e8f0;vertical-align:top;color:#b91c1c;font-weight:bold">${escapeHTML(issue.original || issue.word || "")}</td>
+                <td style="padding:10px;border-bottom:1px solid #e2e8f0;vertical-align:top;color:#15803d;font-weight:bold">${escapeHTML(issue.correction || "See corrected sentence")}</td>
+                <td style="padding:10px;border-bottom:1px solid #e2e8f0;vertical-align:top;line-height:1.7">${escapeHTML(issue.explanation || issue.message || "")}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>
     `;
-
-  } else {
-
-    const score = Number(result.score) || 0;
-    const issueTypes = result.issues.map(i => i.type);
-    const hasGrammar =
-      issueTypes.includes("grammar") ||
-      issueTypes.includes("agreement");
-    const hasSpelling =
-      issueTypes.includes("spelling");
-    const hasPunctuation =
-      issueTypes.includes("punctuation") ||
-      issueTypes.includes("capitalization");
-    const hasVocabulary =
-      issueTypes.includes("word");
-
-    let lesson = "";
-
-    if(score <= 3){
-      lesson = `
-        <p>
-          Your sentence needs major revision. First make sure it directly answers the writing task, then correct the marked errors and state one clear main idea.
-        </p>
-      `;
-    }
-    else if(score <= 5){
-      lesson = `
-        <p>
-          Your sentence has a beginning idea, but it needs clearer grammar and a stronger connection to the writing task. Rewrite it as one complete topic sentence with one clear main idea.
-        </p>
-      `;
-    }
-    else if(score <= 7){
-      lesson = `
-        <p>
-          Your sentence communicates part of the idea, but it still needs revision before it is a strong topic sentence. Make the main idea more specific and use precise academic vocabulary.
-        </p>
-      `;
-    }
-    else {
-      lesson = `
-        <p>
-          Your sentence is generally strong. To improve it further, make the main idea more specific and choose precise academic vocabulary.
-        </p>
-      `;
-    }
-
-    const focus = [];
-    if(hasGrammar) focus.push("grammar and sentence structure");
-    if(hasSpelling) focus.push("spelling");
-    if(hasPunctuation) focus.push("capitalization and punctuation");
-    if(hasVocabulary) focus.push("word choice");
-
-    if(focus.length){
-      lesson += `
-        <p>
-          <strong>Your learning focus:</strong> Work first on ${focus.join(", ")}. Then compare your original sentence with the corrected sentence below.
-        </p>
-      `;
-    } else {
-      lesson += `
-        <p>
-          <strong>Your learning focus:</strong> Compare your original sentence with the corrected sentence below and check that your topic and main idea are both clear.
-        </p>
-      `;
-    }
-
-    explanation += lesson;
-
-  }
-
-
-  $("teacherText").innerHTML =
-    explanation;
-
-
-  /* CORRECTED */
-
-  $("corrected").textContent =
-    result.corrected_sentence || text;
-
-
-  /* MODEL */
-
-  $("modelSentence").textContent =
-    exercise.model;
-
-
-  $("modelBreakdown").innerHTML = `
-
-    <div class="breakdown">
-
-      <strong>Topic</strong>
-
-      <br><br>
-
-      ${exercise.topicPart}
-
-    </div>
-
-
-    <div class="breakdown">
-
-      <strong>Main Idea</strong>
-
-      <br><br>
-
-      ${exercise.mainIdea}
-
-    </div>
-
-
-    <div class="breakdown">
-
-      <strong>Academic Vocabulary</strong>
-
-      <br><br>
-
-      ${exercise.vocab}
-
-    </div>
-
-  `;
-
-
-  /* ACADEMIC WORDS USED */
-
-  const vocabularyLessons =
-    result.academic_vocabulary || [];
-
-  if(vocabularyLessons.length){
-
-    const usedWords =
-      vocabularyLessons.map(item => {
-
-        const original =
-          escapeHTML(item.original || "");
-
-        const alternatives =
-          (item.alternatives || [])
-            .map(word => escapeHTML(word))
-            .join(" / ");
-
-        const explanation =
-          escapeHTML(item.explanation || "");
-
-        return `
-
-          <tr>
-
-            <td class="old-word">
-              ${original}
-            </td>
-
-            <td class="new-word">
-              ${alternatives}
-            </td>
-
-            <td>
-              ${explanation}
-            </td>
-
-          </tr>
-
-        `;
-
-      }).join("");
-
-    $("teacherText").innerHTML += `
-
-      <h4>
-        📚 Your Vocabulary Lesson
-      </h4>
-
-      <table class="vocab-table">
-
-        <tr>
-          <th>Your Word</th>
-          <th>Academic Choices</th>
-          <th>How to Use Them</th>
-        </tr>
-
-        ${usedWords}
-
-      </table>
-
-    `;
-
-  }
-
-  /* NEXT STEP */
-
-  if(result.score >= 8){
-
-    $("nextStep").innerHTML = `
-
-      <p>
-        🌟 Your sentence is developing well.
-        For your next attempt, try using one
-        of the academic vocabulary words from
-        the lesson and make your main idea
-        even more specific.
-      </p>
-
-    `;
-
   }
   else{
-
-    $("nextStep").innerHTML = `
-
-      <p>
-        ✏️ Rewrite your sentence.
-        First correct the red-marked errors.
-        Then replace any blue-marked general
-        vocabulary with one of the academic
-        choices provided above.
-      </p>
-
-      <p>
-        ⭐ Use the model sentence as a guide.
-        Pay attention to how it introduces
-        the topic and clearly states the
-        main idea.
-      </p>
-
+    explanation += `
+      <div style="margin-top:10px;padding:12px;background:#f8fafc;border-radius:8px;line-height:1.75">
+        <strong>Why this matters:</strong> No specific rule-based error was identified, so use the overall AI feedback to check clarity, sentence structure, task connection, and precise vocabulary.
+      </div>
     `;
-
   }
 
+  $("teacherText").innerHTML = explanation;
 
-  $("feedback")
-    .classList
-    .add("show");
+  /* 4. CORRECT SENTENCE */
+  $("corrected").textContent = result.corrected_sentence || text;
+
+  /* 6. STRONG MODEL */
+  $("modelSentence").textContent = exercise.model;
+  $("modelBreakdown").innerHTML = `
+    <div class="breakdown"><strong>Topic</strong><br><br>${escapeHTML(exercise.topicPart)}</div>
+    <div class="breakdown"><strong>Main Idea</strong><br><br>${escapeHTML(exercise.mainIdea)}</div>
+    <div class="breakdown"><strong>Academic Vocabulary</strong><br><br>${escapeHTML(exercise.vocab)}</div>
+  `;
+
+  /* 7. NEXT STEP */
+  if(result.next_step){
+    $("nextStep").innerHTML = `<p style="line-height:1.75"><strong>🎯 Goal for your next sentence:</strong> ${escapeHTML(result.next_step)}</p>`;
+  }
+  else if(score >= 8){
+    $("nextStep").innerHTML = `<p style="line-height:1.75">🌟 Keep the same clear structure, but make the main idea more specific and use precise academic vocabulary.</p>`;
+  }
+  else{
+    $("nextStep").innerHTML = `<p style="line-height:1.75">✏️ Rewrite the sentence by correcting the problems above, then write one clear topic sentence that directly answers the task.</p>`;
+  }
+
+  $("feedback").classList.add("show");
 
 }
 
@@ -3029,30 +2721,33 @@ function generateRecordFeedback(
   exercise
 ){
 
-  let feedback =
-    result.overall_feedback ||
-    (
-      result.score >= 8
-        ? "Your topic sentence is developing well."
-        : "Your topic sentence needs revision."
-    );
+  const parts = [];
 
-
-  if(result.next_step){
-
-    feedback +=
-      " Next step: " +
-      result.next_step;
-
+  if(result.overall_feedback){
+    parts.push("Overall feedback: " + result.overall_feedback);
   }
 
+  if(result.issues && result.issues.length){
+    parts.push("What Needs Attention:");
+    result.issues.forEach((issue,index) => {
+      parts.push(
+        `${index + 1}. ${issue.category || issue.type || "Sentence Structure"}` +
+        ` | Incorrect: ${issue.original || issue.word || ""}` +
+        ` | Correct: ${issue.correction || "See corrected sentence"}` +
+        ` | Why: ${issue.explanation || "Review the corrected sentence and explanation."}`
+      );
+    });
+  }
+  else{
+    parts.push("What Needs Attention: No specific workbook rule error was detected. Use the overall AI feedback to check clarity, task connection, sentence structure, and vocabulary.");
+  }
 
-  feedback +=
-    " Strong model: " +
-    exercise.model;
+  if(result.next_step){
+    parts.push("Next Step: " + result.next_step);
+  }
 
-
-  return feedback;
+  parts.push("Strong model: " + exercise.model);
+  return parts.join("\\n\\n");
 
 }
 
@@ -3222,71 +2917,29 @@ function renderRecords(){
 
 function openSubmission(record){
 
-  /* submission-history-learning-page-v2 */
   const topicLabel =
-    record.topic === "health"
-      ? "❤️ Health"
-      : record.topic === "nature"
-        ? "🌿 Nature"
-        : "💻 Science & Technology";
+    record.topic === "health" ? "❤️ Health" :
+    record.topic === "nature" ? "🌿 Nature" :
+    "💻 Science & Technology";
 
-  const exercise =
-    exercises[record.topic] &&
-    exercises[record.topic][Number(record.exercise_number) - 1];
-
-  const modelSentence =
-    exercise && exercise.model
-      ? exercise.model
-      : "Study the strong topic sentence example from this exercise.";
-
-  const modelTopic =
-    exercise && exercise.topicPart
-      ? exercise.topicPart
-      : "Identify the main topic clearly.";
-
-  const modelMainIdea =
-    exercise && exercise.mainIdea
-      ? exercise.mainIdea
-      : "State one clear main idea.";
-
-  const modelVocab =
-    exercise && exercise.vocab
-      ? exercise.vocab
-      : "Use precise academic vocabulary.";
-
+  const exercise = exercises[record.topic] && exercises[record.topic][Number(record.exercise_number) - 1];
+  const modelSentence = exercise && exercise.model ? exercise.model : "Study the strong topic sentence example from this exercise.";
+  const modelTopic = exercise && exercise.topicPart ? exercise.topicPart : "Identify the main topic clearly.";
+  const modelMainIdea = exercise && exercise.mainIdea ? exercise.mainIdea : "State one clear main idea.";
+  const modelVocab = exercise && exercise.vocab ? exercise.vocab : "Use precise academic vocabulary.";
   const score = Number(record.score) || 0;
 
   const attention = score >= 8
-    ? `
-      <div class="learning-section" style="margin-top:0;background:#ecfdf5;border-left-color:#15803d">
-        <p style="margin:0;line-height:1.7">
-          🌟 <strong>Excellent!</strong> This submission did not receive a low score.
-          Study the marked sentence and the learning feedback below, then look for one way to make your next sentence even more precise.
-        </p>
-      </div>
-    `
-    : `
-      <div class="learning-section" style="margin-top:0">
-        <p style="margin:0;line-height:1.7">
-          🔎 Review the marked words in your original sentence. Read the learning feedback carefully and compare your original sentence with the corrected version before trying again.
-        </p>
-      </div>
-    `;
+    ? `<div style="padding:12px;background:#ecfdf5;border-left:4px solid #15803d;border-radius:8px;line-height:1.7"><strong>🌟 No specific workbook error was recorded for this submission.</strong><p style="margin:7px 0 0">Read the Learn Why feedback and use the Next Step goal to keep improving.</p></div>`
+    : `<div style="padding:12px;background:#fff7ed;border-left:4px solid #ea580c;border-radius:8px;line-height:1.7"><strong>🔎 This submission needs revision.</strong><p style="margin:7px 0 0">Compare the original sentence, saved feedback, and corrected sentence carefully.</p></div>`;
 
   const nextStep = score >= 8
-    ? `
-      <p>🌟 Your sentence is developing well. For your next attempt, make the main idea even more specific and use precise academic vocabulary.</p>
-    `
-    : `
-      <p>✏️ Rewrite your sentence. First correct the marked errors. Then compare your revision with the strong model below.</p>
-      <p>⭐ Pay attention to how the model introduces the topic and clearly states the main idea.</p>
-    `;
+    ? `<p style="line-height:1.75">🌟 Keep the same clear structure, but make the main idea more specific and use precise academic vocabulary.</p>`
+    : `<p style="line-height:1.75">✏️ Correct the problems identified in the saved feedback, then write one clear topic sentence that directly answers the task.</p>`;
 
-  $("submissionModalTitle").textContent =
-    "📖 Student Writing Learning Page";
+  $("submissionModalTitle").textContent = "📖 Student Writing Learning Page";
 
   $("submissionModalBody").innerHTML = `
-
     <div class="learning-subtitle">
       ${topicLabel} — Exercise ${escapeHTML(String(record.exercise_number))}
       &nbsp;•&nbsp; Attempt ${escapeHTML(String(record.attempt_number))}
@@ -3294,71 +2947,42 @@ function openSubmission(record){
       &nbsp;•&nbsp; Score ${escapeHTML(String(record.score))}/10
     </div>
 
-    <!-- 1. ORIGINAL -->
     <div class="learning-section">
-      <h3>1️⃣ Your Original Sentence</h3>
-      <div class="annotated-sentence">
-        ${record.annotated_sentence || escapeHTML(record.original_sentence || "")}
-      </div>
-      <div class="key">
-        <span>🔴 Red = spelling / grammar / punctuation</span>
-        <span>🔵 Blue = weak word choice</span>
-        <span>⭕ Circle = capitalization</span>
-        <span>▢ Box = grammar</span>
-      </div>
+      <h3>1️⃣ Original Sentence</h3>
+      <div class="annotated-sentence">${record.annotated_sentence || escapeHTML(record.original_sentence || "")}</div>
+      <div class="key"><span>🔴 Red = spelling / grammar / punctuation</span><span>🔵 Blue = weak word choice</span><span>⭕ Circle = capitalization</span><span>▢ Box = grammar</span></div>
     </div>
 
-    <!-- 2. ATTENTION -->
-    <div class="learning-section">
-      <h3>2️⃣ What Needs Attention?</h3>
-      ${attention}
-    </div>
+    <div class="learning-section"><h3>2️⃣ What Needs Attention?</h3>${attention}</div>
 
-    <!-- 3. LEARN WHY -->
     <div class="learning-section">
       <h3>3️⃣ Learn Why</h3>
-      <div class="submission-modal-text">
-        ${record.teacher_feedback || "Read the marked sentence and compare it carefully with the corrected version below."}
-      </div>
+      <div class="submission-modal-text">${escapeHTML(record.teacher_feedback || "No saved learning feedback is available for this submission.")}</div>
     </div>
 
-    <!-- 4. CORRECTION -->
     <div class="learning-section">
-      <h3>4️⃣ Correct Your Sentence</h3>
-      <div class="corrected">
-        ${escapeHTML(record.corrected_sentence || record.original_sentence || "")}
-      </div>
+      <h3>4️⃣ Correct Sentence</h3>
+      <div class="corrected">${escapeHTML(record.corrected_sentence || record.original_sentence || "")}</div>
     </div>
 
-    <!-- 5. ACADEMIC VOCABULARY -->
     <div class="learning-section">
       <h3>5️⃣ Academic Words to Learn</h3>
       <p>These are stronger words you can use instead of general everyday vocabulary.</p>
-      <table class="vocab-table">
-        <thead>
-          <tr>
-            <th>Everyday Word</th>
-            <th>Academic Choices</th>
-            <th>Use These When...</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td class="old-word">good</td><td class="new-word">beneficial / advantageous</td><td>describing a positive effect</td></tr>
-          <tr><td class="old-word">bad</td><td class="new-word">harmful / detrimental</td><td>describing a negative effect</td></tr>
-          <tr><td class="old-word">big</td><td class="new-word">significant / considerable</td><td>describing importance or size</td></tr>
-          <tr><td class="old-word">important</td><td class="new-word">essential / significant / crucial</td><td>describing something necessary</td></tr>
-          <tr><td class="old-word">help</td><td class="new-word">assist / support / facilitate</td><td>describing assistance or improvement</td></tr>
-          <tr><td class="old-word">get</td><td class="new-word">obtain / receive / acquire</td><td>describing receiving or gaining something</td></tr>
-          <tr><td class="old-word">show</td><td class="new-word">demonstrate / illustrate</td><td>presenting evidence or an example</td></tr>
-          <tr><td class="old-word">make</td><td class="new-word">create / produce / develop</td><td>describing the creation or development</td></tr>
-        </tbody>
-      </table>
+      <table class="vocab-table"><thead><tr><th>Everyday Word</th><th>Academic Choices</th><th>Use These When...</th></tr></thead><tbody>
+        <tr><td class="old-word">good</td><td class="new-word">beneficial / advantageous</td><td>describing a positive effect</td></tr>
+        <tr><td class="old-word">bad</td><td class="new-word">harmful / detrimental</td><td>describing a negative effect</td></tr>
+        <tr><td class="old-word">big</td><td class="new-word">significant / considerable</td><td>describing importance or size</td></tr>
+        <tr><td class="old-word">important</td><td class="new-word">essential / significant / crucial</td><td>describing something necessary</td></tr>
+        <tr><td class="old-word">help</td><td class="new-word">assist / support / facilitate</td><td>describing assistance or improvement</td></tr>
+        <tr><td class="old-word">get</td><td class="new-word">obtain / receive / acquire</td><td>describing receiving or gaining something</td></tr>
+        <tr><td class="old-word">show</td><td class="new-word">demonstrate / illustrate</td><td>presenting evidence or an example</td></tr>
+        <tr><td class="old-word">make</td><td class="new-word">create / produce / develop</td><td>describing the creation or development</td></tr>
+      </tbody></table>
     </div>
 
-    <!-- 6. MODEL -->
     <div class="learning-section">
       <h3>6️⃣ ⭐ Learn From a Strong Topic Sentence</h3>
-      <p>Study this example carefully. Do not simply copy it. Notice how it introduces the topic and gives the paragraph a clear direction.</p>
+      <p>Study this example carefully. Notice how it introduces the topic, states a clear main idea, and uses academic vocabulary.</p>
       <div class="model">${escapeHTML(modelSentence)}</div>
       <div class="model-breakdown">
         <div class="breakdown"><strong>Topic</strong><br><br>${escapeHTML(modelTopic)}</div>
@@ -3367,12 +2991,7 @@ function openSubmission(record){
       </div>
     </div>
 
-    <!-- 7. NEXT STEP -->
-    <div class="learning-section">
-      <h3>7️⃣ 🎯 Your Next Step</h3>
-      ${nextStep}
-    </div>
-
+    <div class="learning-section"><h3>7️⃣ 🎯 Your Next Step</h3>${nextStep}</div>
   `;
 
   $("submissionModal").classList.add("show");
@@ -3380,6 +2999,7 @@ function openSubmission(record){
   document.body.style.overflow = "hidden";
 
 }
+
 
 function closeSubmission(){
 
