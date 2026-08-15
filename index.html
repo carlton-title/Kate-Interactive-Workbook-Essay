@@ -880,7 +880,7 @@ textarea:focus{
       class="primary"
       id="check">
 
-      🔍 Analyze My Sentence
+      📨 Submit My Work
 
     </button>
 
@@ -903,7 +903,7 @@ textarea:focus{
     id="analyzing"
     class="analyzing">
 
-    Submitting...
+    Submitting your work...
 
   </div>
 
@@ -2616,98 +2616,34 @@ function showLearningPage(
    SAVE TO SUPABASE
 ========================================================= */
 
-async function saveSubmission(
-  text,
-  result,
-  attemptNumber
-){
-
-  const exercise =
-    exercises[topic][exerciseIndex];
-
+async function saveSubmission(text, attemptNumber){
 
   const { error } =
     await supabaseClient
       .from("essay_submissions")
       .insert({
-
-        student_name:
-          currentStudentName,
-
-        student_id:
-          currentStudentID,
-
-        student_number:
-          currentStudentNumber,
-
-        topic:
-          topic,
-
-        exercise_number:
-          exerciseIndex + 1,
-
-        strategy:
-          $("strategy").value,
-
-        original_sentence:
-          text,
-
-        annotated_sentence:
-          annotate(
-            text,
-            result
-          ),
-
-        corrected_sentence:
-          correctedSentence(text),
-
-        teacher_feedback:
-          generateRecordFeedback(
-            text,
-            result,
-            exercise
-          ),
-
-        score:
-          result.score,
-
-        attempt_number:
-          attemptNumber,
-
-        completed_at:
-          new Date().toISOString()
-
+        student_name: currentStudentName,
+        student_id: currentStudentID,
+        student_number: currentStudentNumber,
+        topic: topic,
+        exercise_number: exerciseIndex + 1,
+        strategy: $("strategy").value,
+        original_sentence: text,
+        annotated_sentence: escapeHTML(text),
+        corrected_sentence: null,
+        teacher_feedback: null,
+        score: null,
+        attempt_number: attemptNumber,
+        completed_at: new Date().toISOString(),
+        review_status: "pending"
       });
 
-
   if(error){
-
-    console.error(
-      "Supabase error:",
-      error
-    );
-
-    $("saveStatus").textContent =
-      "⚠️ Feedback is ready, but the record could not be saved.";
-
-    $("saveStatus")
-      .className =
-      "save-status save-error";
-
+    console.error("Supabase submission error:", error);
     return false;
-
   }
 
-
-  $("saveStatus").textContent =
-    "✓ Saved successfully.";
-
-  $("saveStatus")
-    .className =
-    "save-status save-success";
-
   return true;
-
 }
 
 
@@ -3035,7 +2971,7 @@ document.addEventListener("keydown", event => {
 
 
 /* =========================================================
-   ANALYZE BUTTON
+   SUBMIT BUTTON
 ========================================================= */
 
 $("check").addEventListener(
@@ -3043,158 +2979,47 @@ $("check").addEventListener(
   async () => {
 
     const text =
-      $("answer")
-        .value
-        .trim();
-
+      $("answer").value.trim();
 
     if(!text){
-
-      alert(
-        "Write one topic sentence first."
-      );
-
+      alert("Write one topic sentence before submitting.");
       return;
-
     }
 
-
     $("check").disabled = true;
-
-    $("analyzing")
-      .classList
-      .add("show");
-
-
-    $("feedback")
-      .classList
-      .remove("show");
-
-
+    $("analyzing").classList.add("show");
+    $("feedback").classList.remove("show");
     $("saveStatus").textContent = "";
 
-
     try {
+      const attempts = records.filter(r =>
+        r.topic === topic &&
+        r.exercise_number === exerciseIndex + 1
+      ).length;
 
-      await new Promise(
-        resolve =>
-          setTimeout(resolve, 700)
-      );
+      const saved = await saveSubmission(text, attempts + 1);
+      if(!saved) return;
 
-
-      await updateSpelling(text);
-
-
-      const result =
-        await analyze(text);
-
-
-      showLearningPage(
-        text,
-        result
-      );
-
-
-      const attempts =
-        records.filter(
-          r =>
-            r.topic === topic &&
-            r.exercise_number ===
-              exerciseIndex + 1
-        ).length;
-
-
-      await saveSubmission(
-        text,
-        result,
-        attempts + 1
-      );
-
+      $("saveStatus").textContent =
+        "✓ Workbook successfully submitted. Wait for your teacher to review your work.";
+      $("saveStatus").className =
+        "save-status save-success";
 
       await loadRecords();
-
-
       $("next").disabled = false;
-
-
-      $("feedback")
-        .scrollIntoView({
-          behavior:"smooth"
-        });
-
 
     }
     catch(error){
-
-      console.error(
-        "Analysis failed:",
-        error
-      );
-
-
+      console.error("Submission failed:", error);
       $("saveStatus").textContent =
-        "⚠️ " +
-        (
-          error.message ||
-          "The writing feedback could not be generated."
-        );
-
-
-      $("saveStatus")
-        .className =
+        "⚠️ Your work could not be submitted. Please try again.";
+      $("saveStatus").className =
         "save-status save-error";
-
-
     }
     finally{
-
-      $("analyzing")
-        .classList
-        .remove("show");
-
-
       $("check").disabled = false;
-
+      $("analyzing").classList.remove("show");
     }
-
-  }
-);
-
-
-/* =========================================================
-   NEXT
-========================================================= */
-
-$("next").addEventListener(
-  "click",
-  () => {
-
-    exerciseIndex++;
-
-
-    if(exerciseIndex >= 5){
-
-      exerciseIndex = 0;
-
-      if(topic === "health")
-        topic = "nature";
-
-      else if(topic === "nature")
-        topic = "technology";
-
-      else
-        topic = "health";
-
-    }
-
-
-    render();
-
-    window.scrollTo({
-      top:0,
-      behavior:"smooth"
-    });
-
   }
 );
 
