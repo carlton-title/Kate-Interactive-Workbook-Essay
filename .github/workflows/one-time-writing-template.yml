@@ -1,0 +1,47 @@
+name: Apply Writing Template label
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Add Writing Template heading and remove this one-time workflow
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          marker = '<!-- WRITING -->\n\n<div class="card">\n'
+          heading = '<!-- WRITING -->\n\n<div class="card">\n\n  <h2 style="margin:0 0 14px;color:#123a72">✍️ Writing Template</h2>\n'
+          if '✍️ Writing Template' not in s:
+              if marker not in s:
+                  raise SystemExit('Writing section marker not found; no changes made.')
+              s = s.replace(marker, heading, 1)
+              p.write_text(s, encoding='utf-8')
+          else:
+              print('Writing Template heading already present.')
+
+          workflow = Path('.github/workflows/one-time-writing-template.yml')
+          workflow.unlink(missing_ok=True)
+
+      - name: Commit the change
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html .github/workflows/one-time-writing-template.yml
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "Label writing section as Writing Template"
+            git push
+          fi
