@@ -1,0 +1,28 @@
+name: Update Student Learning Page
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Apply learning page changes
+        run: python .github/scripts/update_learning_page.py
+
+      - name: Commit changes and remove one-time files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          rm -f .github/workflows/update-learning-page.yml .github/scripts/update_learning_page.py
+          git add index.html .github/workflows/update-learning-page.yml .github/scripts/update_learning_page.py
+          git commit -m "Refine seven-part student writing learning page"
+          git push
