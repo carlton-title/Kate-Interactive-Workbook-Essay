@@ -2,8 +2,6 @@ name: Add teacher test mode passcode
 
 on:
   push:
-    paths:
-      - '.github/workflows/add-teacher-test-passcode.yml'
 
 permissions:
   contents: write
@@ -14,39 +12,28 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Add passcode gate to Teacher Test Mode
+      - name: Patch Teacher Test Mode
         run: |
           python - <<'PY'
           from pathlib import Path
           import re
-
           p = Path('index.html')
           s = p.read_text(encoding='utf-8')
-
-          old = '''function startTestMode(){
-
-  teacherTestMode = true;
-
-  currentStudentID = "TEST";
-
-  currentStudentName =
-    "Teacher Test Account";
-
-  currentStudentNumber =
-    "TEST";
-
-  enterWorkbook();
-
-}'''
-
-          new = '''function startTestMode(){
+          pattern = r'function startTestMode\(\)\{.*?\n\}\n\n\nfunction enterWorkbook\(\)\{'
+          replacement = '''async function startTestMode(){
 
   const passcode = prompt("Teacher Test Mode passcode:");
 
   if(passcode === null)
     return;
 
-  if(passcode !== "082713"){
+  const bytes = new TextEncoder().encode(passcode);
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  const hash = Array.from(new Uint8Array(digest))
+    .map(b => b.toString(16).padStart(2,"0"))
+    .join("");
+
+  if(hash !== "41ec532df8a4fab502d09f45a3933b021d807b9a5b04663ae01ca52a1975e90a"){
     $("loginError").textContent =
       "Incorrect Teacher Test Mode passcode.";
     return;
@@ -66,13 +53,14 @@ jobs:
 
   enterWorkbook();
 
-}'''
+}
 
-          if old not in s:
-              raise SystemExit('Expected startTestMode block was not found; no change made.')
 
-          s = s.replace(old, new, 1)
-          p.write_text(s, encoding='utf-8')
+function enterWorkbook(){'''
+          s2, count = re.subn(pattern, replacement, s, count=1, flags=re.S)
+          if count != 1:
+              raise SystemExit('Could not locate startTestMode block; no change made.')
+          p.write_text(s2, encoding='utf-8')
           PY
 
       - name: Commit patch
