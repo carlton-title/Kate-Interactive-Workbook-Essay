@@ -1,0 +1,81 @@
+name: Apply Teacher Test Mode Passcode
+
+on:
+  push:
+    paths:
+      - '.github/workflows/apply-teacher-test-passcode.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Patch Teacher Test Mode
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          old = '''function startTestMode(){
+
+  teacherTestMode = true;
+
+  currentStudentID = "TEST";
+
+  currentStudentName =
+    "Teacher Test Account";
+
+  currentStudentNumber =
+    "TEST";
+
+  enterWorkbook();
+
+}'''
+          new = '''function startTestMode(){
+
+  const passcode =
+    prompt("Enter Teacher Test Mode passcode:");
+
+  if(passcode !== "082713"){
+
+    if(passcode !== null){
+      alert("Incorrect Teacher Test Mode passcode.");
+    }
+
+    return;
+
+  }
+
+  teacherTestMode = true;
+
+  currentStudentID = "TEST";
+
+  currentStudentName =
+    "Teacher Test Account";
+
+  currentStudentNumber =
+    "TEST";
+
+  enterWorkbook();
+
+}'''
+          if old not in s:
+              raise SystemExit('Expected startTestMode function was not found; refusing to modify index.html')
+          p.write_text(s.replace(old, new, 1), encoding='utf-8')
+          PY
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html .github/workflows/apply-teacher-test-passcode.yml
+          git diff --cached --quiet && exit 0
+          git commit -m "Protect Teacher Test Mode with passcode"
+          git push
